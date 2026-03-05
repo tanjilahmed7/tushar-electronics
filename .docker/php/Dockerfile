@@ -27,7 +27,7 @@ RUN docker-php-ext-install bcmath pcntl opcache exif
 
 # Node.js & npm (for Vite/frontend build)
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
-  && apt-get install -y nodejs \
+  && apt-get install -y nodejs npm \
   && corepack enable
 ENV PATH="/usr/share/nodejs/corepack/shims:$PATH"
 
