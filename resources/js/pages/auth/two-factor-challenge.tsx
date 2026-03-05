@@ -24,18 +24,18 @@ export default function TwoFactorChallenge() {
     }>(() => {
         if (showRecoveryInput) {
             return {
-                title: 'Recovery code',
+                title: 'পুনরুদ্ধার কোড',
                 description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                    'অ্যাকাউন্টে প্রবেশ নিশ্চিত করতে জরুরি পুনরুদ্ধার কোডগুলোর একটি লিখুন।',
+                toggleText: 'প্রমাণীকরণ কোড দিয়ে লগইন করুন',
             };
         }
 
         return {
-            title: 'Authentication code',
+            title: 'প্রমাণীকরণ কোড',
             description:
-                'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+                'আপনার অথেন্টিকেটর অ্যাপ থেকে প্রাপ্ত প্রমাণীকরণ কোড লিখুন।',
+            toggleText: 'পুনরুদ্ধার কোড দিয়ে লগইন করুন',
         };
     }, [showRecoveryInput]);
 
@@ -50,7 +50,7 @@ export default function TwoFactorChallenge() {
             title={authConfigContent.title}
             description={authConfigContent.description}
         >
-            <Head title="Two-factor authentication" />
+            <Head title="দ্বি-পর্যায় প্রমাণীকরণ" />
 
             <div className="space-y-6">
                 <Form
@@ -66,7 +66,7 @@ export default function TwoFactorChallenge() {
                                     <Input
                                         name="recovery_code"
                                         type="text"
-                                        placeholder="Enter recovery code"
+                                        placeholder="পুনরুদ্ধার কোড লিখুন"
                                         autoFocus={showRecoveryInput}
                                         required
                                     />
@@ -107,11 +107,11 @@ export default function TwoFactorChallenge() {
                                 className="w-full"
                                 disabled={processing}
                             >
-                                Continue
+                                চালিয়ে যান
                             </Button>
 
                             <div className="text-center text-sm text-muted-foreground">
-                                <span>or you can </span>
+                                <span>অথবা আপনি </span>
                                 <button
                                     type="button"
                                     className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"

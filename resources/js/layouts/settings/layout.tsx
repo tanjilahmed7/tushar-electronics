@@ -13,22 +13,22 @@ import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'প্রোফাইল',
         href: edit(),
         icon: null,
     },
     {
-        title: 'Password',
+        title: 'পাসওয়ার্ড',
         href: editPassword(),
         icon: null,
     },
     {
-        title: 'Two-factor auth',
+        title: 'দ্বি-পর্যায় প্রমাণীকরণ',
         href: show(),
         icon: null,
     },
     {
-        title: 'Appearance',
+        title: 'উপস্থিতি',
         href: editAppearance(),
         icon: null,
     },
@@ -45,15 +45,15 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     return (
         <div className="px-4 py-6">
             <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
+                title="সেটিংস"
+                description="প্রোফাইল ও অ্যাকাউন্ট সেটিংস পরিচালনা করুন"
             />
 
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav
                         className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
+                        aria-label="সেটিংস"
                     >
                         {sidebarNavItems.map((item, index) => (
                             <Button

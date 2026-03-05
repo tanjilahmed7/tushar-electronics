@@ -23,14 +23,14 @@ export default function DeleteUser() {
         <div className="space-y-6">
             <Heading
                 variant="small"
-                title="Delete account"
-                description="Delete your account and all of its resources"
+                title="অ্যাকাউন্ট মুছুন"
+                description="আপনার অ্যাকাউন্ট ও এর সব রিসোর্স মুছে ফেলুন"
             />
             <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
                 <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
-                    <p className="font-medium">Warning</p>
+                    <p className="font-medium">সতর্কতা</p>
                     <p className="text-sm">
-                        Please proceed with caution, this cannot be undone.
+                        সাবধানে এগোন। এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
                     </p>
                 </div>
 
@@ -40,18 +40,15 @@ export default function DeleteUser() {
                             variant="destructive"
                             data-test="delete-user-button"
                         >
-                            Delete account
+                            অ্যাকাউন্ট মুছুন
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogTitle>
-                            Are you sure you want to delete your account?
+                            আপনি কি নিশ্চিত যে অ্যাকাউন্ট মুছতে চান?
                         </DialogTitle>
                         <DialogDescription>
-                            Once your account is deleted, all of its resources
-                            and data will also be permanently deleted. Please
-                            enter your password to confirm you would like to
-                            permanently delete your account.
+                            অ্যাকাউন্ট মুছে গেলে এর সব রিসোর্স ও ডেটা স্থায়ীভাবে মুছে যাবে। অ্যাকাউন্ট স্থায়ীভাবে মুছতে চান তা নিশ্চিত করতে পাসওয়ার্ড লিখুন।
                         </DialogDescription>
 
                         <Form
@@ -70,7 +67,7 @@ export default function DeleteUser() {
                                             htmlFor="password"
                                             className="sr-only"
                                         >
-                                            Password
+                                            পাসওয়ার্ড
                                         </Label>
 
                                         <Input
@@ -78,7 +75,7 @@ export default function DeleteUser() {
                                             type="password"
                                             name="password"
                                             ref={passwordInput}
-                                            placeholder="Password"
+                                            placeholder="পাসওয়ার্ড"
                                             autoComplete="current-password"
                                         />
 
@@ -93,7 +90,7 @@ export default function DeleteUser() {
                                                     resetAndClearErrors()
                                                 }
                                             >
-                                                Cancel
+                                                বাতিল
                                             </Button>
                                         </DialogClose>
 
@@ -106,7 +103,7 @@ export default function DeleteUser() {
                                                 type="submit"
                                                 data-test="confirm-delete-user-button"
                                             >
-                                                Delete account
+                                                অ্যাকাউন্ট মুছুন
                                             </button>
                                         </Button>
                                     </DialogFooter>

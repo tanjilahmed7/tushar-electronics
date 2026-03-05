@@ -15,10 +15,10 @@ type Props = {
 export default function ResetPassword({ token, email }: Props) {
     return (
         <AuthLayout
-            title="Reset password"
-            description="Please enter your new password below"
+            title="পাসওয়ার্ড রিসেট করুন"
+            description="নিচে আপনার নতুন পাসওয়ার্ড লিখুন"
         >
-            <Head title="Reset password" />
+            <Head title="পাসওয়ার্ড রিসেট করুন" />
 
             <Form
                 {...update.form()}
@@ -28,7 +28,7 @@ export default function ResetPassword({ token, email }: Props) {
                 {({ processing, errors }) => (
                     <div className="grid gap-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">ইমেইল</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -45,7 +45,7 @@ export default function ResetPassword({ token, email }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">পাসওয়ার্ড</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -53,14 +53,14 @@ export default function ResetPassword({ token, email }: Props) {
                                 autoComplete="new-password"
                                 className="mt-1 block w-full"
                                 autoFocus
-                                placeholder="Password"
+                                placeholder="পাসওয়ার্ড"
                             />
                             <InputError message={errors.password} />
                         </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="password_confirmation">
-                                Confirm password
+                                পাসওয়ার্ড নিশ্চিত করুন
                             </Label>
                             <Input
                                 id="password_confirmation"
@@ -68,7 +68,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 name="password_confirmation"
                                 autoComplete="new-password"
                                 className="mt-1 block w-full"
-                                placeholder="Confirm password"
+                                placeholder="পাসওয়ার্ড নিশ্চিত করুন"
                             />
                             <InputError
                                 message={errors.password_confirmation}
@@ -83,7 +83,7 @@ export default function ResetPassword({ token, email }: Props) {
                             data-test="reset-password-button"
                         >
                             {processing && <Spinner />}
-                            Reset password
+                            পাসওয়ার্ড রিসেট করুন
                         </Button>
                     </div>
                 )}

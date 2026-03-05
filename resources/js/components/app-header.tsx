@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, Smartphone, Tags, Wallet } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -42,20 +42,35 @@ type Props = {
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'ড্যাশবোর্ড',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'সিম ব্যবস্থাপনা',
+        href: '/sims',
+        icon: Smartphone,
+    },
+    {
+        title: 'লেনদেনের ক্যাটাগরি',
+        href: '/transaction-categories',
+        icon: Tags,
+    },
+    {
+        title: 'লেনদেন',
+        href: '/transactions',
+        icon: Wallet,
     },
 ];
 
 const rightNavItems: NavItem[] = [
     {
-        title: 'Repository',
+        title: 'রিপোজিটরি',
         href: 'https://github.com/laravel/react-starter-kit',
         icon: Folder,
     },
     {
-        title: 'Documentation',
+        title: 'ডকুমেন্টেশন',
         href: 'https://laravel.com/docs/starter-kits#react',
         icon: BookOpen,
     },
@@ -90,7 +105,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
                             >
                                 <SheetTitle className="sr-only">
-                                    Navigation menu
+                                    নেভিগেশন মেনু
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />

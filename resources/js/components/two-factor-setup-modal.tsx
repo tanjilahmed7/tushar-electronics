@@ -104,7 +104,7 @@ function TwoFactorSetupStep({
                     <div className="relative flex w-full items-center justify-center">
                         <div className="absolute inset-0 top-1/2 h-px w-full bg-border" />
                         <span className="relative bg-card px-2 py-1">
-                            or, enter the code manually
+                            অথবা কোড হাতে লিখুন
                         </span>
                     </div>
 
@@ -261,27 +261,27 @@ export default function TwoFactorSetupModal({
     }>(() => {
         if (twoFactorEnabled) {
             return {
-                title: 'Two-factor authentication enabled',
+                title: 'দ্বি-পর্যায় প্রমাণীকরণ সক্ষম হয়েছে',
                 description:
-                    'Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.',
-                buttonText: 'Close',
+                    'দ্বি-পর্যায় প্রমাণীকরণ এখন সক্ষম। কিউআর কোড স্ক্যান করুন বা অথেন্টিকেটর অ্যাপে সেটআপ কী লিখুন।',
+                buttonText: 'বন্ধ করুন',
             };
         }
 
         if (showVerificationStep) {
             return {
-                title: 'Verify authentication code',
+                title: 'প্রমাণীকরণ কোড যাচাই করুন',
                 description:
-                    'Enter the 6-digit code from your authenticator app',
-                buttonText: 'Continue',
+                    'আপনার অথেন্টিকেটর অ্যাপ থেকে ৬ অঙ্কের কোড লিখুন',
+                buttonText: 'চালিয়ে যান',
             };
         }
 
         return {
-            title: 'Enable two-factor authentication',
+            title: 'দ্বি-পর্যায় প্রমাণীকরণ সক্ষম করুন',
             description:
-                'To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app',
-            buttonText: 'Continue',
+                'দ্বি-পর্যায় প্রমাণীকরণ সক্ষম করতে কিউআর কোড স্ক্যান করুন বা অথেন্টিকেটর অ্যাপে সেটআপ কী লিখুন',
+            buttonText: 'চালিয়ে যান',
         };
     }, [twoFactorEnabled, showVerificationStep]);
 

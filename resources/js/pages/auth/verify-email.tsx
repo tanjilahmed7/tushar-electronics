@@ -10,15 +10,14 @@ import { send } from '@/routes/verification';
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
         <AuthLayout
-            title="Verify email"
-            description="Please verify your email address by clicking on the link we just emailed to you."
+            title="ইমেইল যাচাই করুন"
+            description="রেজিস্ট্রেশনে দেওয়া ইমেইলে আমরা একটি লিংক পাঠিয়েছি। যাচাই করতে সেই লিংকে ক্লিক করুন।"
         >
-            <Head title="Email verification" />
+            <Head title="ইমেইল যাচাই" />
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                    রেজিস্ট্রেশনে দেওয়া ইমেইলে একটি নতুন যাচাই লিংক পাঠানো হয়েছে।
                 </div>
             )}
 
@@ -27,14 +26,14 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     <>
                         <Button disabled={processing} variant="secondary">
                             {processing && <Spinner />}
-                            Resend verification email
+                            যাচাই ইমেইল আবার পাঠান
                         </Button>
 
                         <TextLink
                             href={logout()}
                             className="mx-auto block text-sm"
                         >
-                            Log out
+                            লগআউট
                         </TextLink>
                     </>
                 )}
