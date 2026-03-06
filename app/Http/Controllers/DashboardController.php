@@ -13,11 +13,6 @@ use Inertia\Response;
 class DashboardController extends Controller
 {
     /**
-     * Low balance threshold (BDT).
-     */
-    public const LOW_BALANCE_THRESHOLD = 100;
-
-    /**
      * Number of months in the transaction performance chart (full year).
      */
     private const CHART_MONTHS = 12;
@@ -35,17 +30,6 @@ class DashboardController extends Controller
         $totalSims = $sims->count();
         $activeSims = $sims->where('status', 'active')->count();
         $totalBalance = $sims->sum('balance');
-        $lowBalanceSims = $sims
-            ->where('status', 'active')
-            ->filter(fn (Sim $s) => (float) $s->balance < self::LOW_BALANCE_THRESHOLD)
-            ->values()
-            ->map(fn (Sim $s) => [
-                'id' => $s->id,
-                'sim_number' => $s->sim_number,
-                'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
-                'balance' => $s->balance,
-            ])
-            ->all();
 
         $allSimBalances = $sims
             ->sortByDesc(fn (Sim $s) => (float) $s->balance)
@@ -69,7 +53,6 @@ class DashboardController extends Controller
                 'active_sims' => $activeSims,
                 'total_balance' => (string) number_format($totalBalance, 2),
             ],
-            'lowBalanceSims' => $lowBalanceSims,
             'allSimBalances' => $allSimBalances,
             'transactionChart' => $transactionChart,
             'chartYear' => $year,

@@ -44,13 +44,6 @@ type SimStats = {
     total_balance: string;
 };
 
-type LowBalanceSim = {
-    id: number;
-    sim_number: string;
-    operator_label: string;
-    balance: string;
-};
-
 type SimBalanceRow = {
     id: number;
     name: string | null;
@@ -71,7 +64,6 @@ type TransactionChartRow = {
 
 type Props = {
     simStats: SimStats;
-    lowBalanceSims: LowBalanceSim[];
     allSimBalances: SimBalanceRow[];
     transactionChart: TransactionChartRow[];
     chartYear: number;
@@ -84,7 +76,6 @@ export default function Dashboard() {
     const {
         auth,
         simStats,
-        lowBalanceSims,
         allSimBalances,
         transactionChart,
         chartYear,
@@ -92,7 +83,6 @@ export default function Dashboard() {
     } = usePage().props as {
         auth?: { user?: { name?: string } };
         simStats?: SimStats;
-        lowBalanceSims?: LowBalanceSim[];
         allSimBalances?: SimBalanceRow[];
         transactionChart?: TransactionChartRow[];
         chartYear?: number;
@@ -104,7 +94,6 @@ export default function Dashboard() {
         active_sims: 0,
         total_balance: '0.00',
     };
-    const lowBalance = lowBalanceSims ?? [];
     const allBalances = allSimBalances ?? [];
     const chartData = transactionChart ?? [];
     const years = chartYears ?? [new Date().getFullYear()];
