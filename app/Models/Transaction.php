@@ -15,6 +15,14 @@ class Transaction extends Model
      *
      * @var list<string>
      */
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_SUCCESS = 'success';
+
+    public const STATUSES = [
+        'pending' => 'পেন্ডিং',
+        'success' => 'সফল',
+    ];
+
     protected $fillable = [
         'transaction_category_id',
         'sim_id',
@@ -25,6 +33,7 @@ class Transaction extends Model
         'commission',
         'commission_sim_id',
         'fee',
+        'status',
     ];
 
     protected function casts(): array

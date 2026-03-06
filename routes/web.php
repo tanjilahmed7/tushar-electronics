@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('transactions/bulk', [TransactionController::class, 'storeBulk'])->name('transactions.bulk.store');
     Route::get('transactions/{transaction}/edit', [TransactionController::class, 'edit'])->name('transactions.edit');
     Route::put('transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
+    Route::put('transactions/{transaction}/status', [TransactionController::class, 'updateStatus'])->name('transactions.update-status');
     Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 });
 
