@@ -153,9 +153,6 @@ export default function SimsIndex({ sims, filters, operators }: Props) {
                                             সিমের নাম
                                         </th>
                                         <th className="px-6 py-4 text-left font-semibold text-foreground">
-                                            অপারেটর
-                                        </th>
-                                        <th className="px-6 py-4 text-left font-semibold text-foreground">
                                             সিম নম্বর
                                         </th>
                                         <th className="px-6 py-4 text-right font-semibold text-foreground">
@@ -175,7 +172,7 @@ export default function SimsIndex({ sims, filters, operators }: Props) {
                                 <tbody>
                                     {sims.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                                            <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                                                 কোনো সিম পাওয়া যায়নি। নতুন সিম যোগ করতে উপরের বাটন ব্যবহার করুন।
                                             </td>
                                         </tr>
@@ -186,7 +183,6 @@ export default function SimsIndex({ sims, filters, operators }: Props) {
                                                 className="border-b border-border/70 transition-colors hover:bg-muted/30"
                                             >
                                                 <td className="px-6 py-4 text-muted-foreground">{sim.name ?? '—'}</td>
-                                                <td className="px-6 py-4">{sim.operator_label}</td>
                                                 <td className="px-6 py-4 font-medium">{sim.sim_number}</td>
                                                 <td className="px-6 py-4 text-right font-medium tabular-nums">{sim.balance}</td>
                                                 <td className="px-6 py-4">

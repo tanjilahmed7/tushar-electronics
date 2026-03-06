@@ -323,7 +323,6 @@ export default function Dashboard() {
                                         <thead>
                                             <tr className="border-b border-border bg-muted/50">
                                                 <th className="px-6 py-3 text-left font-semibold text-foreground">সিমের নাম / নম্বর</th>
-                                                <th className="px-6 py-3 text-left font-semibold text-foreground">অপারেটর</th>
                                                 <th className="px-6 py-3 text-right font-semibold text-foreground">ব্যালেন্স</th>
                                                 <th className="px-6 py-3 text-left font-semibold text-foreground w-20">স্ট্যাটাস</th>
                                             </tr>
@@ -341,7 +340,6 @@ export default function Dashboard() {
                                                             {sim.name ? `${sim.name} (${sim.sim_number})` : sim.sim_number}
                                                         </Link>
                                                     </td>
-                                                    <td className="px-6 py-3 text-muted-foreground">{sim.operator_label}</td>
                                                     <td className="px-6 py-3 text-right font-semibold tabular-nums">{sim.balance} ৳</td>
                                                     <td className="px-6 py-3">
                                                         <span
