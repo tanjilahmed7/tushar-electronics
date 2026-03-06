@@ -338,9 +338,6 @@ export default function Dashboard() {
                                             <p className="mt-1 text-sm text-muted-foreground">
                                                 {sim.status === 'active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
                                             </p>
-                                            <Button asChild variant="outline" size="sm" className="mt-3 w-full text-base">
-                                                <Link href={`/sims/${sim.id}/edit`}>এডিট</Link>
-                                            </Button>
                                         </div>
                                     ))}
                                 </div>
