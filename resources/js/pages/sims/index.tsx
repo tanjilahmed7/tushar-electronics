@@ -164,6 +164,9 @@ export default function SimsIndex({ sims, filters, operators }: Props) {
                                         <th className="px-6 py-4 text-left font-semibold text-foreground">
                                             স্ট্যাটাস
                                         </th>
+                                        <th className="px-6 py-4 text-left font-semibold text-foreground">
+                                            নোট
+                                        </th>
                                         <th className="px-6 py-4 text-right font-semibold text-foreground">
                                             ক্রিয়া
                                         </th>
@@ -172,7 +175,7 @@ export default function SimsIndex({ sims, filters, operators }: Props) {
                                 <tbody>
                                     {sims.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                                            <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                                                 কোনো সিম পাওয়া যায়নি। নতুন সিম যোগ করতে উপরের বাটন ব্যবহার করুন।
                                             </td>
                                         </tr>
@@ -196,6 +199,9 @@ export default function SimsIndex({ sims, filters, operators }: Props) {
                                                     >
                                                         {sim.status_label}
                                                     </span>
+                                                </td>
+                                                <td className="px-6 py-4 max-w-[200px] truncate text-muted-foreground" title={sim.note ?? undefined}>
+                                                    {sim.note ?? '—'}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex justify-end gap-2">
