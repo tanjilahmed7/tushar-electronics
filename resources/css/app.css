@@ -65,19 +65,19 @@
 :root {
     /* Requested palette */
     --background: #eef3f1; /* Very Light Sage */
-    --foreground: #333333; /* Dark Gray */
+    --foreground: #2b2b2b; /* Text – Dark Gray */
 
-    --primary: #2f5d50; /* Deep Green */
+    --primary: #2f7d65; /* Icon / Highlight – Medium Green */
     --primary-foreground: #ffffff;
 
     --secondary: #5f8f8b; /* Muted Teal */
     --secondary-foreground: #0f2f28;
 
     --accent: #e9c46a; /* Soft Gold */
-    --accent-foreground: #2b2b2b;
+    --accent-foreground: var(--foreground);
 
     /* Supporting tokens (derived to match palette) */
-    --card: #f7fbfa;
+    --card: #eef3f1; /* Very Light Sage */
     --card-foreground: var(--foreground);
     --popover: #ffffff;
     --popover-foreground: var(--foreground);
@@ -88,11 +88,11 @@
     --destructive: #b42318;
     --destructive-foreground: #ffffff;
 
-    --border: #d7e3de;
-    --input: #d7e3de;
-    --ring: #2f5d50;
+    --border: #d8e3de; /* Soft Green Gray */
+    --input: #d8e3de;
+    --ring: #2f7d65;
 
-    --chart-1: #2f5d50;
+    --chart-1: #2f7d65;
     --chart-2: #5f8f8b;
     --chart-3: #e9c46a;
     --chart-4: #3f7a67;
