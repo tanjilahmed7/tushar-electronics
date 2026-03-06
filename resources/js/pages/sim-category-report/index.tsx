@@ -33,6 +33,7 @@ type Row = {
     category_id: number;
     category_name: string;
     transaction_count: number;
+    total_amount: string;
 };
 
 type Props = {
@@ -197,13 +198,16 @@ export default function SimCategoryReportIndex({ rows, sims, filters }: Props) {
                                         <th className="px-6 py-4 text-right font-semibold text-foreground">
                                             লেনদেন সংখ্যা
                                         </th>
+                                        <th className="px-6 py-4 text-right font-semibold text-foreground">
+                                            মোট টাকা
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rows.length === 0 ? (
                                         <tr>
                                             <td
-                                                colSpan={3}
+                                                colSpan={4}
                                                 className="px-6 py-12 text-center text-muted-foreground"
                                             >
                                                 এই সময়ের মধ্যে কোনো লেনদেন নেই অথবা সব লেনদেন সিম ছাড়া।
@@ -230,6 +234,9 @@ export default function SimCategoryReportIndex({ rows, sims, filters }: Props) {
                                                 </td>
                                                 <td className="px-6 py-4 text-right font-medium tabular-nums">
                                                     {row.transaction_count} বার
+                                                </td>
+                                                <td className="px-6 py-4 text-right font-medium tabular-nums">
+                                                    {row.total_amount} ৳
                                                 </td>
                                             </tr>
                                         ))

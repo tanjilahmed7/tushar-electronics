@@ -27,7 +27,7 @@ class SimCategoryReportController extends Controller
         }
 
         $query = Transaction::query()
-            ->selectRaw('sim_id, transaction_category_id, count(*) as transaction_count')
+            ->selectRaw('sim_id, transaction_category_id, count(*) as transaction_count, COALESCE(SUM(amount), 0) as total_amount')
             ->whereNotNull('sim_id')
             ->groupBy('sim_id', 'transaction_category_id');
 
@@ -65,6 +65,7 @@ class SimCategoryReportController extends Controller
                 'category_id' => $row->transaction_category_id,
                 'category_name' => $category?->name ?? '—',
                 'transaction_count' => (int) $row->transaction_count,
+                'total_amount' => number_format((float) ($row->total_amount ?? 0), 2),
             ];
         })->sortBy([
             ['sim_display', 'asc'],
