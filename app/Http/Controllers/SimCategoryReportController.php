@@ -12,11 +12,13 @@ use Inertia\Response;
 class SimCategoryReportController extends Controller
 {
     /**
-     * Show report: per SIM, per category, count of transactions (optional sim + month filter).
+     * Show report: per SIM, per category, count of transactions (optional sim + month/date filter).
      */
     public function index(Request $request): Response
     {
         $month = $request->input('month');
+        $from  = $request->input('from');
+        $to    = $request->input('to');
         $simId = $request->input('sim_id');
         if ($simId !== null && $simId !== '') {
             $simId = (int) $simId;
@@ -33,7 +35,13 @@ class SimCategoryReportController extends Controller
             $query->where('sim_id', $simId);
         }
 
-        if ($month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
+        if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+            $query->whereDate('date', '>=', $from);
+        }
+        if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+            $query->whereDate('date', '<=', $to);
+        }
+        if (! $from && ! $to && $month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
             $query->whereYear('date', (int) $m[1])
                 ->whereMonth('date', (int) $m[2]);
         }
@@ -75,6 +83,8 @@ class SimCategoryReportController extends Controller
             'sims' => $simOptions,
             'filters' => [
                 'month' => $month,
+                'from' => $from,
+                'to' => $to,
                 'sim_id' => $simId !== null ? (string) $simId : null,
             ],
         ]);

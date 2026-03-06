@@ -14,6 +14,8 @@ class CommissionFeeSummaryReportController extends Controller
     public function __invoke(Request $request): Response
     {
         $month = $request->input('month');
+        $from  = $request->input('from');
+        $to    = $request->input('to');
         $simId = $request->input('sim_id');
         if ($simId !== null && $simId !== '') {
             $simId = (int) $simId;
@@ -22,7 +24,14 @@ class CommissionFeeSummaryReportController extends Controller
         }
 
         $baseQuery = Transaction::query();
-        if ($month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
+
+        if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+            $baseQuery->whereDate('date', '>=', $from);
+        }
+        if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+            $baseQuery->whereDate('date', '<=', $to);
+        }
+        if (! $from && ! $to && $month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
             $baseQuery->whereYear('date', (int) $m[1])->whereMonth('date', (int) $m[2]);
         }
         if ($simId !== null) {
@@ -81,7 +90,12 @@ class CommissionFeeSummaryReportController extends Controller
             'net' => (string) number_format($net, 2),
             'bySim' => $bySim,
             'sims' => $simOptions,
-            'filters' => ['month' => $month, 'sim_id' => $simId !== null ? (string) $simId : null],
+            'filters' => [
+                'month' => $month,
+                'from' => $from,
+                'to' => $to,
+                'sim_id' => $simId !== null ? (string) $simId : null,
+            ],
         ]);
     }
 }

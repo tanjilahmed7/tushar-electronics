@@ -38,7 +38,7 @@ type Row = {
 type Props = {
     rows: Row[];
     sims: SimOption[];
-    filters: { month?: string; sim_id?: string | null };
+    filters: { month?: string; from?: string; to?: string; sim_id?: string | null };
 };
 
 const breadcrumbs = (): BreadcrumbItem[] => [
@@ -47,27 +47,42 @@ const breadcrumbs = (): BreadcrumbItem[] => [
     { title: 'সিম–ক্যাটাগরি রিপোর্ট', href: REPORT_PATH },
 ];
 
+function periodLabel(month: string, from: string, to: string): string {
+    if (from || to) {
+        const fmt = (d: string) =>
+            new Intl.DateTimeFormat('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d));
+        if (from && to) return `${fmt(from)} – ${fmt(to)}`;
+        if (from) return `${fmt(from)} থেকে`;
+        return `${fmt(to!)} পর্যন্ত`;
+    }
+    if (month) {
+        const [y, m] = month.split('-').map(Number);
+        return new Intl.DateTimeFormat('bn-BD', { month: 'long', year: 'numeric' }).format(new Date(y, m - 1, 1));
+    }
+    return 'সব সময়';
+}
+
 export default function SimCategoryReportIndex({ rows, sims, filters }: Props) {
     const [month, setMonth] = useState(filters.month ?? '');
+    const [from, setFrom]   = useState(filters.from ?? '');
+    const [to, setTo]       = useState(filters.to ?? '');
     const [simId, setSimId] = useState<string>(filters.sim_id ?? '');
 
     const applyFilter = useCallback(() => {
         router.get(
             REPORT_PATH,
-            { month: month || undefined, sim_id: simId || undefined },
+            {
+                month: (!from && !to && month) ? month : undefined,
+                from: from || undefined,
+                to: to || undefined,
+                sim_id: simId || undefined,
+            },
             { preserveState: false }
         );
-    }, [month, simId]);
+    }, [month, from, to, simId]);
 
     const selectedSimLabel = simId ? sims.find((s) => String(s.id) === simId)?.label : null;
-
-    const monthLabel = month
-        ? (() => {
-              const [y, m] = month.split('-').map(Number);
-              const d = new Date(y, m - 1, 1);
-              return new Intl.DateTimeFormat('bn-BD', { month: 'long', year: 'numeric' }).format(d);
-          })()
-        : 'সব সময়';
+    const label = periodLabel(filters.month ?? '', filters.from ?? '', filters.to ?? '');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs()}>
@@ -78,15 +93,15 @@ export default function SimCategoryReportIndex({ rows, sims, filters }: Props) {
                         সিম–ক্যাটাগরি রিপোর্ট
                     </h1>
                     <p className="mt-1 text-base text-muted-foreground">
-                        প্রতিটি সিমে কোন ক্যাটাগরিতে কতগুলো লেনদেন হয়েছে তা মাস অনুযায়ী দেখুন
+                        প্রতিটি সিমে কোন ক্যাটাগরিতে কতগুলো লেনদেন হয়েছে তা মাস বা দিন অনুযায়ী দেখুন
                     </p>
                 </div>
 
                 <Card className="border-border">
                     <CardHeader className="pb-4">
-                        <CardTitle className="text-lg font-semibold">সিম ও মাস অনুযায়ী ফিল্টার</CardTitle>
+                        <CardTitle className="text-lg font-semibold">সিম ও তারিখ অনুযায়ী ফিল্টার</CardTitle>
                         <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
-                            <div className="space-y-2 sm:w-56">
+                            <div className="space-y-2 sm:w-52">
                                 <label htmlFor="sim_filter" className="text-base font-medium">
                                     সিম নির্বাচন করুন
                                 </label>
@@ -107,17 +122,44 @@ export default function SimCategoryReportIndex({ rows, sims, filters }: Props) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2 sm:w-56">
+                            <div className="space-y-2 sm:w-48">
                                 <label htmlFor="month" className="text-base font-medium">
-                                    মাস নির্বাচন করুন
+                                    মাস
                                 </label>
                                 <Input
                                     id="month"
                                     type="month"
                                     value={month}
-                                    onChange={(e) => setMonth(e.target.value)}
+                                    onChange={(e) => { setMonth(e.target.value); setFrom(''); setTo(''); }}
                                     className="h-12 text-base"
                                 />
+                            </div>
+                            <div className="flex items-end gap-2">
+                                <div className="space-y-2 sm:w-40">
+                                    <label htmlFor="from" className="text-base font-medium">
+                                        তারিখ থেকে
+                                    </label>
+                                    <Input
+                                        id="from"
+                                        type="date"
+                                        value={from}
+                                        onChange={(e) => { setFrom(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
+                                <span className="mb-3 text-muted-foreground">–</span>
+                                <div className="space-y-2 sm:w-40">
+                                    <label htmlFor="to" className="text-base font-medium">
+                                        তারিখ পর্যন্ত
+                                    </label>
+                                    <Input
+                                        id="to"
+                                        type="date"
+                                        value={to}
+                                        onChange={(e) => { setTo(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
                             </div>
                             <Button onClick={applyFilter} className="h-12 text-base px-6">
                                 <Search className="mr-2 size-5" />
@@ -132,8 +174,8 @@ export default function SimCategoryReportIndex({ rows, sims, filters }: Props) {
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                             <BarChart3 className="size-5" />
                             সিম অনুযায়ী ক্যাটাগরি ও লেনদেন সংখ্যা
-                            {(selectedSimLabel || month) &&
-                                ` (${[selectedSimLabel, month ? monthLabel : null].filter(Boolean).join(' · ')})`}
+                            {(selectedSimLabel || filters.month || filters.from || filters.to) &&
+                                ` (${[selectedSimLabel, label !== 'সব সময়' ? label : null].filter(Boolean).join(' · ')})`}
                         </CardTitle>
                         <CardDescription className="text-base">
                             {selectedSimLabel

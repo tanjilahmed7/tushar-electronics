@@ -13,12 +13,20 @@ class CommissionController extends Controller
     public function index(Request $request): Response
     {
         $month = $request->input('month');
+        $from  = $request->input('from');
+        $to    = $request->input('to');
 
         $query = Transaction::query()
             ->whereNotNull('commission')
             ->where('commission', '>', 0);
 
-        if ($month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
+        if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+            $query->whereDate('date', '>=', $from);
+        }
+        if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+            $query->whereDate('date', '<=', $to);
+        }
+        if (! $from && ! $to && $month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
             $query->whereYear('date', (int) $m[1])
                 ->whereMonth('date', (int) $m[2]);
         }
@@ -54,6 +62,8 @@ class CommissionController extends Controller
             'bySim' => $bySimFormatted,
             'filters' => [
                 'month' => $month,
+                'from' => $from,
+                'to' => $to,
             ],
         ]);
     }

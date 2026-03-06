@@ -38,7 +38,7 @@ type Props = {
     net: string;
     bySim: BySimRow[];
     sims: SimOption[];
-    filters: { month?: string; sim_id?: string | null };
+    filters: { month?: string; from?: string; to?: string; sim_id?: string | null };
 };
 
 const breadcrumbs = (): BreadcrumbItem[] => [
@@ -46,6 +46,21 @@ const breadcrumbs = (): BreadcrumbItem[] => [
     { title: 'রিপোর্ট', href: '/reports' },
     { title: 'কমিশন ও ফি একত্রে', href: PATH },
 ];
+
+function periodLabel(month: string, from: string, to: string): string {
+    if (from || to) {
+        const fmt = (d: string) =>
+            new Intl.DateTimeFormat('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d));
+        if (from && to) return `${fmt(from)} – ${fmt(to)}`;
+        if (from) return `${fmt(from)} থেকে`;
+        return `${fmt(to!)} পর্যন্ত`;
+    }
+    if (month) {
+        const [y, m] = month.split('-').map(Number);
+        return new Intl.DateTimeFormat('bn-BD', { month: 'long', year: 'numeric' }).format(new Date(y, m - 1, 1));
+    }
+    return 'সব সময়';
+}
 
 export default function CommissionFeeSummaryReport({
     totalCommission,
@@ -56,25 +71,24 @@ export default function CommissionFeeSummaryReport({
     filters,
 }: Props) {
     const [month, setMonth] = useState(filters.month ?? '');
+    const [from, setFrom]   = useState(filters.from ?? '');
+    const [to, setTo]       = useState(filters.to ?? '');
     const [simId, setSimId] = useState(filters.sim_id ?? '');
 
     const applyFilter = useCallback(() => {
         router.get(
             PATH,
-            { month: month || undefined, sim_id: simId || undefined },
+            {
+                month: (!from && !to && month) ? month : undefined,
+                from: from || undefined,
+                to: to || undefined,
+                sim_id: simId || undefined,
+            },
             { preserveState: false }
         );
-    }, [month, simId]);
+    }, [month, from, to, simId]);
 
-    const monthLabel = month
-        ? (() => {
-              const [y, m] = month.split('-').map(Number);
-              return new Intl.DateTimeFormat('bn-BD', {
-                  month: 'long',
-                  year: 'numeric',
-              }).format(new Date(y, m - 1, 1));
-          })()
-        : 'সব সময়';
+    const label = periodLabel(filters.month ?? '', filters.from ?? '', filters.to ?? '');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs()}>
@@ -85,7 +99,7 @@ export default function CommissionFeeSummaryReport({
                         কমিশন ও ফি একত্রে
                     </h1>
                     <p className="mt-1 text-base text-muted-foreground">
-                        মোট কমিশন, মোট ফি ও নিট (কমিশন − ফি); মাস ও সিম অনুযায়ী
+                        মোট কমিশন, মোট ফি ও নিট (কমিশন − ফি); মাস বা দিন অনুযায়ী ও সিম অনুযায়ী
                     </p>
                 </div>
 
@@ -93,7 +107,7 @@ export default function CommissionFeeSummaryReport({
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg font-semibold">ফিল্টার</CardTitle>
                         <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
-                            <div className="space-y-2 sm:w-56">
+                            <div className="space-y-2 sm:w-52">
                                 <label htmlFor="month" className="text-base font-medium">
                                     মাস
                                 </label>
@@ -101,11 +115,38 @@ export default function CommissionFeeSummaryReport({
                                     id="month"
                                     type="month"
                                     value={month}
-                                    onChange={(e) => setMonth(e.target.value)}
+                                    onChange={(e) => { setMonth(e.target.value); setFrom(''); setTo(''); }}
                                     className="h-12 text-base"
                                 />
                             </div>
-                            <div className="space-y-2 sm:w-56">
+                            <div className="flex items-end gap-2">
+                                <div className="space-y-2 sm:w-44">
+                                    <label htmlFor="from" className="text-base font-medium">
+                                        তারিখ থেকে
+                                    </label>
+                                    <Input
+                                        id="from"
+                                        type="date"
+                                        value={from}
+                                        onChange={(e) => { setFrom(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
+                                <span className="mb-3 text-muted-foreground">–</span>
+                                <div className="space-y-2 sm:w-44">
+                                    <label htmlFor="to" className="text-base font-medium">
+                                        তারিখ পর্যন্ত
+                                    </label>
+                                    <Input
+                                        id="to"
+                                        type="date"
+                                        value={to}
+                                        onChange={(e) => { setTo(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2 sm:w-52">
                                 <label htmlFor="sim" className="text-base font-medium">
                                     সিম (ঐচ্ছিক)
                                 </label>
@@ -138,7 +179,7 @@ export default function CommissionFeeSummaryReport({
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                             <Wallet className="size-5" />
-                            সারাংশ {month ? `(${monthLabel})` : ''}
+                            সারাংশ ({label})
                         </CardTitle>
                         <CardContent className="pt-4">
                             <div className="grid gap-4 sm:grid-cols-3">

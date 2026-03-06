@@ -27,7 +27,7 @@ type BySimRow = {
 type Props = {
     totalCommission: string;
     bySim: BySimRow[];
-    filters: { month?: string };
+    filters: { month?: string; from?: string; to?: string };
 };
 
 const breadcrumbs = (): BreadcrumbItem[] => [
@@ -36,20 +36,39 @@ const breadcrumbs = (): BreadcrumbItem[] => [
     { title: 'কমিশন', href: COMMISSION_PATH },
 ];
 
+function periodLabel(month: string, from: string, to: string): string {
+    if (from || to) {
+        const fmt = (d: string) =>
+            new Intl.DateTimeFormat('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d));
+        if (from && to) return `${fmt(from)} – ${fmt(to)}`;
+        if (from) return `${fmt(from)} থেকে`;
+        return `${fmt(to!)} পর্যন্ত`;
+    }
+    if (month) {
+        const [y, m] = month.split('-').map(Number);
+        return new Intl.DateTimeFormat('bn-BD', { month: 'long', year: 'numeric' }).format(new Date(y, m - 1, 1));
+    }
+    return 'সব সময়';
+}
+
 export default function CommissionIndex({ totalCommission, bySim, filters }: Props) {
     const [month, setMonth] = useState(filters.month ?? '');
+    const [from, setFrom]   = useState(filters.from ?? '');
+    const [to, setTo]       = useState(filters.to ?? '');
 
     const applyFilter = useCallback(() => {
-        router.get(COMMISSION_PATH, { month: month || undefined }, { preserveState: false });
-    }, [month]);
+        router.get(
+            COMMISSION_PATH,
+            {
+                month: (!from && !to && month) ? month : undefined,
+                from: from || undefined,
+                to: to || undefined,
+            },
+            { preserveState: false }
+        );
+    }, [month, from, to]);
 
-    const monthLabel = month
-        ? (() => {
-              const [y, m] = month.split('-').map(Number);
-              const d = new Date(y, m - 1, 1);
-              return new Intl.DateTimeFormat('bn-BD', { month: 'long', year: 'numeric' }).format(d);
-          })()
-        : 'সব সময়';
+    const label = periodLabel(filters.month ?? '', filters.from ?? '', filters.to ?? '');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs()}>
@@ -60,25 +79,52 @@ export default function CommissionIndex({ totalCommission, bySim, filters }: Pro
                         কমিশন সংক্ষিপ্ত
                     </h1>
                     <p className="mt-1 text-base text-muted-foreground">
-                        মাস অনুযায়ী ও সিম অনুযায়ী মোট কমিশন দেখুন
+                        মাস বা নির্দিষ্ট তারিখ পরিসর অনুযায়ী ও সিম অনুযায়ী মোট কমিশন দেখুন
                     </p>
                 </div>
 
                 <Card className="border-border">
                     <CardHeader className="pb-4">
-                        <CardTitle className="text-lg font-semibold">মাস অনুযায়ী ফিল্টার</CardTitle>
-                        <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-end sm:gap-3">
-                            <div className="space-y-2 sm:w-56">
+                        <CardTitle className="text-lg font-semibold">তারিখ অনুযায়ী ফিল্টার</CardTitle>
+                        <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
+                            <div className="space-y-2 sm:w-52">
                                 <label htmlFor="month" className="text-base font-medium">
-                                    মাস নির্বাচন করুন
+                                    মাস
                                 </label>
                                 <Input
                                     id="month"
                                     type="month"
                                     value={month}
-                                    onChange={(e) => setMonth(e.target.value)}
+                                    onChange={(e) => { setMonth(e.target.value); setFrom(''); setTo(''); }}
                                     className="h-12 text-base"
                                 />
+                            </div>
+                            <div className="flex items-end gap-2">
+                                <div className="space-y-2 sm:w-44">
+                                    <label htmlFor="from" className="text-base font-medium">
+                                        তারিখ থেকে
+                                    </label>
+                                    <Input
+                                        id="from"
+                                        type="date"
+                                        value={from}
+                                        onChange={(e) => { setFrom(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
+                                <span className="mb-3 text-muted-foreground">–</span>
+                                <div className="space-y-2 sm:w-44">
+                                    <label htmlFor="to" className="text-base font-medium">
+                                        তারিখ পর্যন্ত
+                                    </label>
+                                    <Input
+                                        id="to"
+                                        type="date"
+                                        value={to}
+                                        onChange={(e) => { setTo(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
                             </div>
                             <Button onClick={applyFilter} className="h-12 text-base px-6">
                                 <Search className="mr-2 size-5" />
@@ -92,7 +138,7 @@ export default function CommissionIndex({ totalCommission, bySim, filters }: Pro
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                             <Percent className="size-5" />
-                            মোট কমিশন {month ? `(${monthLabel})` : ''}
+                            মোট কমিশন ({label})
                         </CardTitle>
                         <CardContent className="pt-4">
                             <p className="text-3xl font-bold tabular-nums text-foreground">
