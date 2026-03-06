@@ -112,12 +112,16 @@ class TransactionController extends Controller
                 'type_label' => TransactionCategory::TYPES[$c->type] ?? $c->type,
             ]);
 
-        $sims = Sim::query()->orderBy('created_at', 'desc')->get()->map(fn (Sim $s) => [
-            'id' => $s->id,
-            'sim_number' => $s->sim_number,
-            'sim_name' => $s->name,
-            'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
-        ]);
+        $sims = Sim::query()
+            ->where('status', 'active')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(fn (Sim $s) => [
+                'id' => $s->id,
+                'sim_number' => $s->sim_number,
+                'sim_name' => $s->name,
+                'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
+            ]);
 
         return Inertia::render('transactions/create', [
             'categories' => $categories,
@@ -346,12 +350,16 @@ class TransactionController extends Controller
                 'type_label' => TransactionCategory::TYPES[$c->type] ?? $c->type,
             ]);
 
-        $sims = Sim::query()->orderBy('created_at', 'desc')->get()->map(fn (Sim $s) => [
-            'id' => $s->id,
-            'sim_number' => $s->sim_number,
-            'sim_name' => $s->name,
-            'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
-        ]);
+        $sims = Sim::query()
+            ->where('status', 'active')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(fn (Sim $s) => [
+                'id' => $s->id,
+                'sim_number' => $s->sim_number,
+                'sim_name' => $s->name,
+                'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
+            ]);
 
         return Inertia::render('transactions/edit', [
             'transaction' => [
