@@ -43,6 +43,7 @@ type Props = {
 
 const breadcrumbs = (): BreadcrumbItem[] => [
     { title: 'ড্যাশবোর্ড', href: dashboard() },
+    { title: 'রিপোর্ট', href: '/reports' },
     { title: 'সিম–ক্যাটাগরি রিপোর্ট', href: REPORT_PATH },
 ];
 

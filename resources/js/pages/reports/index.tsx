@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import {
     BarChart3,
+    Percent,
     Receipt,
     Tags,
     TrendingUp,
@@ -26,6 +27,7 @@ const iconMap: Record<string, typeof Tags> = {
     'bar-chart': BarChart3,
     users: Users,
     wallet: Wallet,
+    percent: Percent,
 };
 
 type ReportItem = {

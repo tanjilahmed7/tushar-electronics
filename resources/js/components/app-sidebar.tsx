@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BarChart3, FileText, LayoutGrid, Percent, Smartphone, Tags, Wallet } from 'lucide-react';
+import { FileText, LayoutGrid, Smartphone, Tags, Wallet } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -35,16 +35,6 @@ const mainNavItems: NavItem[] = [
         title: 'লেনদেন',
         href: '/transactions',
         icon: Wallet,
-    },
-    {
-        title: 'সিম–ক্যাটাগরি রিপোর্ট',
-        href: '/sim-category-report',
-        icon: BarChart3,
-    },
-    {
-        title: 'কমিশন',
-        href: '/commission',
-        icon: Percent,
     },
     {
         title: 'রিপোর্ট',

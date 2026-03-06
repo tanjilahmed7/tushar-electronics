@@ -13,6 +13,18 @@ class ReportsIndexController extends Controller
         return Inertia::render('reports/index', [
             'reports' => [
                 [
+                    'title' => 'সিম–ক্যাটাগরি রিপোর্ট',
+                    'description' => 'প্রতিটি সিমে কোন ক্যাটাগরিতে কতগুলো লেনদেন হয়েছে মাস অনুযায়ী',
+                    'href' => '/sim-category-report',
+                    'icon' => 'bar-chart',
+                ],
+                [
+                    'title' => 'কমিশন',
+                    'description' => 'মাস ও সিম অনুযায়ী মোট কমিশন সংক্ষিপ্ত',
+                    'href' => '/commission',
+                    'icon' => 'percent',
+                ],
+                [
                     'title' => 'ক্যাটাগরি অনুযায়ী লেনদেন সংক্ষিপ্ত',
                     'description' => 'কোন ক্যাটাগরিতে কত ক্রেডিট/ডেবিট হয়েছে তারিখ অনুযায়ী দেখুন',
                     'href' => '/reports/transaction-by-category',
