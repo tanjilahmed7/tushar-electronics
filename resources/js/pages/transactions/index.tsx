@@ -18,6 +18,7 @@ type TransactionRow = {
     type_label: string;
     sim_id: number | null;
     sim_number: string | null;
+    sim_name: string | null;
     customer_number: string | null;
     amount: string;
     commission: string | null;
@@ -281,7 +282,7 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                             কমিশন
                                         </th>
                                         <th className="px-6 py-4 text-left font-semibold text-foreground">
-                                            সিম
+                                            সিমের নাম
                                         </th>
                                         <th className="px-6 py-4 text-left font-semibold text-foreground">
                                             ধরন
@@ -325,9 +326,9 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                                     {t.commission != null && t.commission !== '' ? `${t.commission} ৳` : '—'}
                                                 </td>
                                                 <td
-                                                    className={`px-6 py-4 text-muted-foreground ${cellMatches(t.sim_number) ? 'bg-primary/15 font-medium text-foreground ring-1 ring-primary/30' : ''}`}
+                                                    className={`px-6 py-4 text-muted-foreground ${cellMatches(t.sim_name ?? t.sim_number) ? 'bg-primary/15 font-medium text-foreground ring-1 ring-primary/30' : ''}`}
                                                 >
-                                                    {t.sim_number ?? '—'}
+                                                    {t.sim_name ?? t.sim_number ?? '—'}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span

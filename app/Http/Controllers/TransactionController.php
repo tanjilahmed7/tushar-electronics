@@ -46,6 +46,7 @@ class TransactionController extends Controller
             'type_label' => TransactionCategory::TYPES[$t->transactionCategory->type] ?? $t->transactionCategory->type,
             'sim_id' => $t->sim_id,
             'sim_number' => $t->sim?->sim_number,
+            'sim_name' => $t->sim?->name,
             'customer_number' => $t->customer_number,
             'amount' => $t->amount,
             'commission' => $t->commission,
