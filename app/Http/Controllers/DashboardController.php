@@ -48,7 +48,7 @@ class DashboardController extends Controller
             ->all();
 
         $allSimBalances = $sims
-            ->sortBy('sim_number')
+            ->sortByDesc(fn (Sim $s) => (float) $s->balance)
             ->values()
             ->map(fn (Sim $s) => [
                 'id' => $s->id,

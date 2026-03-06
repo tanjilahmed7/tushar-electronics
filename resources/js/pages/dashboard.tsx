@@ -312,50 +312,37 @@ export default function Dashboard() {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-0">
+                        <CardContent className="p-4 sm:p-6">
                             {allBalances.length === 0 ? (
-                                <p className="px-6 py-8 text-base text-muted-foreground text-center">
+                                <p className="py-8 text-base text-muted-foreground text-center">
                                     কোনো সিম যোগ করা হয়নি। সিম তালিকা থেকে নতুন সিম যোগ করুন।
                                 </p>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-base" role="grid">
-                                        <thead>
-                                            <tr className="border-b border-border bg-muted/50">
-                                                <th className="px-6 py-3 text-left font-semibold text-foreground">সিমের নাম / নম্বর</th>
-                                                <th className="px-6 py-3 text-right font-semibold text-foreground">ব্যালেন্স</th>
-                                                <th className="px-6 py-3 text-left font-semibold text-foreground w-20">স্ট্যাটাস</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {allBalances.map((sim) => (
-                                                <tr
-                                                    key={sim.id}
-                                                    className={`border-b border-border/70 transition-colors hover:bg-muted/30 ${
-                                                        sim.status === 'inactive' ? 'opacity-70' : ''
-                                                    }`}
-                                                >
-                                                    <td className="px-6 py-3">
-                                                        <Link href={`/sims/${sim.id}`} className="font-medium text-primary hover:underline">
-                                                            {sim.name ? `${sim.name} (${sim.sim_number})` : sim.sim_number}
-                                                        </Link>
-                                                    </td>
-                                                    <td className="px-6 py-3 text-right font-semibold tabular-nums">{sim.balance} ৳</td>
-                                                    <td className="px-6 py-3">
-                                                        <span
-                                                            className={
-                                                                sim.status === 'active'
-                                                                    ? 'text-green-700 dark:text-green-400'
-                                                                    : 'text-muted-foreground'
-                                                            }
-                                                        >
-                                                            {sim.status === 'active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                                    {allBalances.map((sim) => (
+                                        <div
+                                            key={sim.id}
+                                            className={`rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 ${
+                                                sim.status === 'inactive' ? 'opacity-70' : ''
+                                            }`}
+                                        >
+                                            <Link
+                                                href={`/sims/${sim.id}`}
+                                                className="block font-medium text-primary hover:underline"
+                                            >
+                                                {sim.name ?? sim.sim_number}
+                                            </Link>
+                                            <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">
+                                                {sim.balance} ৳
+                                            </p>
+                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                {sim.status === 'active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                                            </p>
+                                            <Button asChild variant="outline" size="sm" className="mt-3 w-full text-base">
+                                                <Link href={`/sims/${sim.id}/edit`}>এডিট</Link>
+                                            </Button>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </CardContent>
