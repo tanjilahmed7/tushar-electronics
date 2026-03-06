@@ -1,3 +1,5 @@
+import { router } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -9,6 +11,16 @@ export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
 }: AppLayoutProps) {
+    useEffect(() => {
+        const onPageShow = (event: PageTransitionEvent) => {
+            if (event.persisted) {
+                router.reload();
+            }
+        };
+        window.addEventListener('pageshow', onPageShow);
+        return () => window.removeEventListener('pageshow', onPageShow);
+    }, []);
+
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
