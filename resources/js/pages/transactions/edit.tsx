@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +28,7 @@ type CategoryOption = {
     type_label: string;
 };
 
-type SimOption = { id: number; sim_number: string; operator_label: string; balance: string };
+type SimOption = { id: number; sim_number: string; sim_name: string | null; operator_label: string; balance: string };
 
 type TransactionEdit = {
     id: number;
@@ -38,6 +39,7 @@ type TransactionEdit = {
     date: string;
     note: string | null;
     commission: string | null;
+    fee: string | null;
 };
 
 type Props = {
@@ -46,7 +48,26 @@ type Props = {
     sims: SimOption[];
 };
 
+const simSearchMatch = (s: SimOption, q: string): boolean => {
+    const qq = q.trim().toLowerCase();
+    if (!qq) return true;
+    const name = (s.sim_name ?? '').toLowerCase();
+    const number = (s.sim_number ?? '').toLowerCase();
+    const operator = (s.operator_label ?? '').toLowerCase();
+    return name.includes(qq) || number.includes(qq) || operator.includes(qq);
+};
+
+const categorySearchMatch = (c: CategoryOption, q: string): boolean => {
+    const qq = q.trim().toLowerCase();
+    if (!qq) return true;
+    const name = (c.name ?? '').toLowerCase();
+    const typeLabel = (c.type_label ?? '').toLowerCase();
+    return name.includes(qq) || typeLabel.includes(qq);
+};
+
 export default function TransactionsEdit({ transaction, categories, sims }: Props) {
+    const [simSearch, setSimSearch] = useState('');
+    const [categorySearch, setCategorySearch] = useState('');
     const { data, setData, put, processing, errors } = useForm({
         transaction_category_id: transaction.transaction_category_id,
         sim_id: transaction.sim_id ?? '',
@@ -55,11 +76,22 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
         date: transaction.date,
         note: transaction.note ?? '',
         commission: transaction.commission != null && transaction.commission !== '' ? String(transaction.commission) : '',
+        fee: transaction.fee != null && transaction.fee !== '' ? String(transaction.fee) : '',
     });
 
     const selectedCategory = useMemo(
         () => categories.find((c) => c.id === data.transaction_category_id),
         [categories, data.transaction_category_id]
+    );
+
+    const filteredSims = useMemo(
+        () => sims.filter((s) => simSearchMatch(s, simSearch)),
+        [sims, simSearch]
+    );
+
+    const filteredCategories = useMemo(
+        () => categories.filter((c) => categorySearchMatch(c, categorySearch)),
+        [categories, categorySearch]
     );
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -72,6 +104,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                 amount: Number(d.amount),
                 commission: d.commission && String(d.commission).trim() !== '' ? Number(d.commission) : null,
                 commission_sim_id: (d.commission && parseFloat(String(d.commission)) > 0 && d.sim_id && String(d.sim_id).trim() !== '') ? Number(d.sim_id) : null,
+                fee: d.fee && String(d.fee).trim() !== '' ? Number(d.fee) : null,
             }),
         });
     };
@@ -123,11 +156,32 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                             <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {categories.map((c) => (
-                                                <SelectItem key={c.id} value={String(c.id)}>
-                                                    {c.name} ({c.type_label})
-                                                </SelectItem>
-                                            ))}
+                                            <div
+                                                className="sticky top-0 z-10 border-b border-border bg-popover p-1.5"
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                            >
+                                                <div className="relative">
+                                                    <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                                    <Input
+                                                        placeholder="ক্যাটাগরি খুঁজুন (নাম/ধরন)..."
+                                                        value={categorySearch}
+                                                        onChange={(e) => setCategorySearch(e.target.value)}
+                                                        className="h-9 pl-8 text-sm"
+                                                        autoComplete="off"
+                                                    />
+                                                </div>
+                                            </div>
+                                            {filteredCategories.length === 0 ? (
+                                                <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                                                    কোনো ক্যাটাগরি পাওয়া যায়নি
+                                                </div>
+                                            ) : (
+                                                filteredCategories.map((c) => (
+                                                    <SelectItem key={c.id} value={String(c.id)}>
+                                                        {c.name} ({c.type_label})
+                                                    </SelectItem>
+                                                ))
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.transaction_category_id} />
@@ -143,12 +197,33 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                             <SelectValue placeholder="সিম নির্বাচন করুন (ঐচ্ছিক)" />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <div
+                                                className="sticky top-0 z-10 border-b border-border bg-popover p-1.5"
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                            >
+                                                <div className="relative">
+                                                    <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                                    <Input
+                                                        placeholder="সিম খুঁজুন (নাম/নম্বর/অপারেটর)..."
+                                                        value={simSearch}
+                                                        onChange={(e) => setSimSearch(e.target.value)}
+                                                        className="h-9 pl-8 text-sm"
+                                                        autoComplete="off"
+                                                    />
+                                                </div>
+                                            </div>
                                             <SelectItem value="__none__">কোনো সিম নয়</SelectItem>
-                                            {sims.map((s) => (
-                                                <SelectItem key={s.id} value={String(s.id)}>
-                                                    {s.sim_number} ({s.operator_label}) — ব্যালেন্স: {s.balance}
-                                                </SelectItem>
-                                            ))}
+                                            {filteredSims.length === 0 ? (
+                                                <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                                                    কোনো সিম পাওয়া যায়নি
+                                                </div>
+                                            ) : (
+                                                filteredSims.map((s) => (
+                                                    <SelectItem key={s.id} value={String(s.id)}>
+                                                        {s.sim_name ? `${s.sim_name} — ব্যালেন্স: ${s.balance}` : `${s.sim_number} (${s.operator_label}) — ব্যালেন্স: ${s.balance}`}
+                                                    </SelectItem>
+                                                ))
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.sim_id} />
@@ -253,6 +328,27 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         কমিশন নির্বাচিত সিমের ব্যালেন্সে ক্রেডিট যোগ করবে
                                     </p>
                                     <InputError message={errors.commission} />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="fee" className="text-base font-medium">
+                                        ফি (ঐচ্ছিক)
+                                    </Label>
+                                    <Input
+                                        id="fee"
+                                        value={data.fee}
+                                        onChange={(e) => setData('fee', e.target.value)}
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="০"
+                                        className="h-12 text-base"
+                                        autoComplete="off"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        ফি নির্বাচিত সিমের ব্যালেন্স থেকে ডেবিট হবে (কাটা যাবে)
+                                    </p>
+                                    <InputError message={errors.fee} />
                                 </div>
                             </div>
 

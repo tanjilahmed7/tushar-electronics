@@ -22,6 +22,7 @@ type TransactionRow = {
     customer_number: string | null;
     amount: string;
     commission: string | null;
+    fee: string | null;
     date: string;
     note: string | null;
     created_at: string;
@@ -281,6 +282,9 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                         <th className="px-6 py-4 text-right font-semibold text-foreground">
                                             কমিশন
                                         </th>
+                                        <th className="px-6 py-4 text-right font-semibold text-foreground">
+                                            ফি
+                                        </th>
                                         <th className="px-6 py-4 text-left font-semibold text-foreground">
                                             সিমের নাম
                                         </th>
@@ -295,7 +299,7 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                 <tbody>
                                     {rows.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                                            <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
                                                 কোনো লেনদেন পাওয়া যায়নি। প্রথমে{' '}
                                                 <Link href={CATEGORIES_PATH} className="text-primary underline">
                                                     লেনদেনের ক্যাটাগরি
@@ -324,6 +328,9 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                                 </td>
                                                 <td className="px-6 py-4 text-right tabular-nums text-muted-foreground">
                                                     {t.commission != null && t.commission !== '' ? `${t.commission} ৳` : '—'}
+                                                </td>
+                                                <td className="px-6 py-4 text-right tabular-nums text-muted-foreground">
+                                                    {t.fee != null && t.fee !== '' ? `${t.fee} ৳` : '—'}
                                                 </td>
                                                 <td
                                                     className={`px-6 py-4 text-muted-foreground ${cellMatches(t.sim_name ?? t.sim_number) ? 'bg-primary/15 font-medium text-foreground ring-1 ring-primary/30' : ''}`}

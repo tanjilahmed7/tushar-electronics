@@ -24,6 +24,7 @@ class Transaction extends Model
         'note',
         'commission',
         'commission_sim_id',
+        'fee',
     ];
 
     protected function casts(): array
@@ -32,6 +33,7 @@ class Transaction extends Model
             'date' => 'date',
             'amount' => 'decimal:2',
             'commission' => 'decimal:2',
+            'fee' => 'decimal:2',
         ];
     }
 

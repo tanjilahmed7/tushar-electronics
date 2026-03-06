@@ -50,6 +50,7 @@ class TransactionController extends Controller
             'customer_number' => $t->customer_number,
             'amount' => $t->amount,
             'commission' => $t->commission,
+            'fee' => $t->fee,
             'date' => $t->date->format('d/m/Y'),
             'note' => $t->note,
             'created_at' => $t->created_at->format('d/m/Y H:i'),
@@ -106,6 +107,7 @@ class TransactionController extends Controller
         $sims = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'sim_number' => $s->sim_number,
+            'sim_name' => $s->name,
             'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
             'balance' => $s->balance,
         ]);
@@ -130,14 +132,36 @@ class TransactionController extends Controller
             'note' => ['nullable', 'string', 'max:1000'],
             'commission' => ['nullable', 'numeric', 'min:0'],
             'commission_sim_id' => ['nullable', 'exists:sims,id'],
+            'fee' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $category = TransactionCategory::find($validated['transaction_category_id']);
-        if ($category->type === 'debit' && ! empty($validated['sim_id'])) {
-            $sim = Sim::find($validated['sim_id']);
-            if ($sim->balance < (float) $validated['amount']) {
+        $feeAmount = isset($validated['fee']) ? (float) $validated['fee'] : 0;
+        if ($category->type === 'debit') {
+            if (empty($validated['sim_id'])) {
                 return redirect()->back()->withErrors([
-                    'amount' => 'নির্বাচিত সিমে পর্যাপ্ত ব্যালেন্স নেই। বর্তমান ব্যালেন্স: '.$sim->balance,
+                    'sim_id' => 'ডেবিট লেনদেনের জন্য সিম নির্বাচন বাধ্যতামূলক।',
+                ])->withInput();
+            }
+            $sim = Sim::find($validated['sim_id']);
+            $minBalance = (float) $validated['amount'] + $feeAmount;
+            if ($sim->balance < $minBalance) {
+                return redirect()->back()->withErrors([
+                    'amount' => 'নির্বাচিত সিমে পর্যাপ্ত ব্যালেন্স নেই (লেনদেন + ফি এর জন্য প্রয়োজন: '.number_format($minBalance, 2).')। বর্তমান ব্যালেন্স: '.$sim->balance,
+                ])->withInput();
+            }
+        }
+        if ($feeAmount > 0 && ! empty($validated['sim_id'])) {
+            $sim = Sim::find($validated['sim_id']);
+            $balanceAfterMain = $category->type === 'credit'
+                ? $sim->balance + (float) $validated['amount']
+                : $sim->balance - (float) $validated['amount'];
+            $commissionToSameSim = (isset($validated['commission']) && (float) $validated['commission'] > 0
+                && (empty($validated['commission_sim_id']) || $validated['commission_sim_id'] == $validated['sim_id']))
+                ? (float) $validated['commission'] : 0;
+            if ($balanceAfterMain + $commissionToSameSim < $feeAmount) {
+                return redirect()->back()->withErrors([
+                    'fee' => 'নির্বাচিত সিমে ফি বাদে পর্যাপ্ত ব্যালেন্স নেই।',
                 ])->withInput();
             }
         }
@@ -152,6 +176,21 @@ class TransactionController extends Controller
                 SimBalanceHistory::create([
                     'sim_id' => $sim->id,
                     'type' => 'deduct',
+                    'amount' => (float) $validated['amount'],
+                    'balance_after' => $balanceAfter,
+                    'date' => $validated['date'],
+                    'note' => 'লেনদেন #'.$t->id.($validated['note'] ? ' — '.$validated['note'] : ''),
+                ]);
+            }
+
+            if ($category->type === 'credit' && ! empty($validated['sim_id'])) {
+                $sim = Sim::find($validated['sim_id']);
+                $sim->refresh();
+                $balanceAfter = $sim->balance + (float) $validated['amount'];
+                $sim->update(['balance' => $balanceAfter]);
+                SimBalanceHistory::create([
+                    'sim_id' => $sim->id,
+                    'type' => 'add',
                     'amount' => (float) $validated['amount'],
                     'balance_after' => $balanceAfter,
                     'date' => $validated['date'],
@@ -183,6 +222,22 @@ class TransactionController extends Controller
                     }
                 }
             }
+
+            $feeAmount = isset($validated['fee']) ? (float) $validated['fee'] : 0;
+            if ($feeAmount > 0 && ! empty($validated['sim_id'])) {
+                $feeSim = Sim::find($validated['sim_id']);
+                $feeSim->refresh();
+                $balanceAfter = $feeSim->balance - $feeAmount;
+                $feeSim->update(['balance' => $balanceAfter]);
+                SimBalanceHistory::create([
+                    'sim_id' => $feeSim->id,
+                    'type' => 'deduct',
+                    'amount' => $feeAmount,
+                    'balance_after' => $balanceAfter,
+                    'date' => $validated['date'],
+                    'note' => 'ফি — লেনদেন #'.$t->id,
+                ]);
+            }
         });
 
         return redirect()->route('transactions.index')->with('status', 'লেনদেন সফলভাবে যোগ করা হয়েছে।');
@@ -203,15 +258,38 @@ class TransactionController extends Controller
             'transactions.*.note' => ['nullable', 'string', 'max:1000'],
             'transactions.*.commission' => ['nullable', 'numeric', 'min:0'],
             'transactions.*.commission_sim_id' => ['nullable', 'exists:sims,id'],
+            'transactions.*.fee' => ['nullable', 'numeric', 'min:0'],
         ]);
 
+        $feeAmounts = [];
         foreach ($validated['transactions'] as $index => $row) {
             $category = TransactionCategory::find($row['transaction_category_id']);
-            if ($category->type === 'debit' && ! empty($row['sim_id'])) {
-                $sim = Sim::find($row['sim_id']);
-                if ($sim->balance < (float) $row['amount']) {
+            $feeAmounts[$index] = isset($row['fee']) ? (float) $row['fee'] : 0;
+            if ($category->type === 'debit') {
+                if (empty($row['sim_id'])) {
                     return redirect()->back()->withErrors([
-                        'transactions' => 'সারি '.($index + 1).': সিম '.$sim->sim_number.' এ পর্যাপ্ত ব্যালেন্স নেই (ব্যালেন্স: '.$sim->balance.')।',
+                        'transactions' => 'সারি '.($index + 1).': ডেবিট লেনদেনের জন্য সিম নির্বাচন বাধ্যতামূলক।',
+                    ])->withInput();
+                }
+                $sim = Sim::find($row['sim_id']);
+                $minBalance = (float) $row['amount'] + $feeAmounts[$index];
+                if ($sim->balance < $minBalance) {
+                    return redirect()->back()->withErrors([
+                        'transactions' => 'সারি '.($index + 1).': সিম '.$sim->sim_number.' এ পর্যাপ্ত ব্যালেন্স নেই (লেনদেন + ফি: '.number_format($minBalance, 2).')। বর্তমান: '.$sim->balance,
+                    ])->withInput();
+                }
+            }
+            if ($feeAmounts[$index] > 0 && ! empty($row['sim_id'])) {
+                $sim = Sim::find($row['sim_id']);
+                $balanceAfterMain = $category->type === 'credit'
+                    ? $sim->balance + (float) $row['amount']
+                    : $sim->balance - (float) $row['amount'];
+                $commissionToSameSim = (isset($row['commission']) && (float) $row['commission'] > 0
+                    && (empty($row['commission_sim_id']) || $row['commission_sim_id'] == $row['sim_id']))
+                    ? (float) $row['commission'] : 0;
+                if ($balanceAfterMain + $commissionToSameSim < $feeAmounts[$index]) {
+                    return redirect()->back()->withErrors([
+                        'transactions' => 'সারি '.($index + 1).': সিমে ফি বাদে পর্যাপ্ত ব্যালেন্স নেই।',
                     ])->withInput();
                 }
             }
@@ -229,6 +307,21 @@ class TransactionController extends Controller
                     SimBalanceHistory::create([
                         'sim_id' => $sim->id,
                         'type' => 'deduct',
+                        'amount' => (float) $row['amount'],
+                        'balance_after' => $balanceAfter,
+                        'date' => $row['date'],
+                        'note' => 'লেনদেন #'.$t->id.(! empty($row['note']) ? ' — '.$row['note'] : ''),
+                    ]);
+                }
+
+                if ($category->type === 'credit' && ! empty($row['sim_id'])) {
+                    $sim = Sim::find($row['sim_id']);
+                    $sim->refresh();
+                    $balanceAfter = $sim->balance + (float) $row['amount'];
+                    $sim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $sim->id,
+                        'type' => 'add',
                         'amount' => (float) $row['amount'],
                         'balance_after' => $balanceAfter,
                         'date' => $row['date'],
@@ -259,6 +352,22 @@ class TransactionController extends Controller
                             $t->update(['commission_sim_id' => $commissionSim->id]);
                         }
                     }
+                }
+
+                $feeAmount = isset($row['fee']) ? (float) $row['fee'] : 0;
+                if ($feeAmount > 0 && ! empty($row['sim_id'])) {
+                    $feeSim = Sim::find($row['sim_id']);
+                    $feeSim->refresh();
+                    $balanceAfter = $feeSim->balance - $feeAmount;
+                    $feeSim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $feeSim->id,
+                        'type' => 'deduct',
+                        'amount' => $feeAmount,
+                        'balance_after' => $balanceAfter,
+                        'date' => $row['date'],
+                        'note' => 'ফি — লেনদেন #'.$t->id,
+                    ]);
                 }
             }
         });
@@ -291,6 +400,7 @@ class TransactionController extends Controller
         $sims = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'sim_number' => $s->sim_number,
+            'sim_name' => $s->name,
             'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
             'balance' => $s->balance,
         ]);
@@ -305,6 +415,7 @@ class TransactionController extends Controller
                 'date' => $transaction->date->format('Y-m-d'),
                 'note' => $transaction->note,
                 'commission' => $transaction->commission,
+                'fee' => $transaction->fee,
             ],
             'categories' => $categories,
             'sims' => $sims,
@@ -325,6 +436,7 @@ class TransactionController extends Controller
             'note' => ['nullable', 'string', 'max:1000'],
             'commission' => ['nullable', 'numeric', 'min:0'],
             'commission_sim_id' => ['nullable', 'exists:sims,id'],
+            'fee' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $transaction->load('transactionCategory');
@@ -333,18 +445,40 @@ class TransactionController extends Controller
         $oldSimId = $transaction->sim_id;
         $oldCommission = (float) ($transaction->commission ?? 0);
         $oldCommissionSimId = $transaction->commission_sim_id;
+        $oldFee = (float) ($transaction->fee ?? 0);
+        $newFeeAmount = isset($validated['fee']) ? (float) $validated['fee'] : 0;
 
         $newCategory = TransactionCategory::find($validated['transaction_category_id']);
-        if ($newCategory->type === 'debit' && ! empty($validated['sim_id'])) {
-            $sim = Sim::find($validated['sim_id']);
-            if ($sim->balance < (float) $validated['amount']) {
+        if ($newCategory->type === 'debit') {
+            if (empty($validated['sim_id'])) {
                 return redirect()->back()->withErrors([
-                    'amount' => 'নির্বাচিত সিমে পর্যাপ্ত ব্যালেন্স নেই। বর্তমান ব্যালেন্স: '.$sim->balance,
+                    'sim_id' => 'ডেবিট লেনদেনের জন্য সিম নির্বাচন বাধ্যতামূলক।',
+                ])->withInput();
+            }
+            $sim = Sim::find($validated['sim_id']);
+            $minBalance = (float) $validated['amount'] + $newFeeAmount;
+            if ($sim->balance < $minBalance) {
+                return redirect()->back()->withErrors([
+                    'amount' => 'নির্বাচিত সিমে পর্যাপ্ত ব্যালেন্স নেই (লেনদেন + ফি প্রয়োজন: '.number_format($minBalance, 2).')। বর্তমান: '.$sim->balance,
+                ])->withInput();
+            }
+        }
+        if ($newFeeAmount > 0 && ! empty($validated['sim_id'])) {
+            $sim = Sim::find($validated['sim_id']);
+            $balanceAfterMain = $newCategory->type === 'credit'
+                ? $sim->balance + (float) $validated['amount']
+                : $sim->balance - (float) $validated['amount'];
+            $commissionToSameSim = (isset($validated['commission']) && (float) $validated['commission'] > 0
+                && (empty($validated['commission_sim_id']) || $validated['commission_sim_id'] == $validated['sim_id']))
+                ? (float) $validated['commission'] : 0;
+            if ($balanceAfterMain + $commissionToSameSim < $newFeeAmount) {
+                return redirect()->back()->withErrors([
+                    'fee' => 'নির্বাচিত সিমে ফি বাদে পর্যাপ্ত ব্যালেন্স নেই।',
                 ])->withInput();
             }
         }
 
-        DB::transaction(function () use ($transaction, $validated, $oldCategory, $oldAmount, $oldSimId, $oldCommission, $oldCommissionSimId) {
+        DB::transaction(function () use ($transaction, $validated, $oldCategory, $oldAmount, $oldSimId, $oldCommission, $oldCommissionSimId, $oldFee, $newFeeAmount) {
             if ($oldCategory->type === 'debit' && ! empty($oldSimId)) {
                 $oldSim = Sim::find($oldSimId);
                 if ($oldSim) {
@@ -358,6 +492,23 @@ class TransactionController extends Controller
                         'balance_after' => $balanceAfter,
                         'date' => $transaction->date->format('Y-m-d'),
                         'note' => 'লেনদেন #'.$transaction->id.' সম্পাদনা — পূর্বের বিয়োগ ফেরত',
+                    ]);
+                }
+            }
+
+            if ($oldCategory->type === 'credit' && ! empty($oldSimId)) {
+                $oldSim = Sim::find($oldSimId);
+                if ($oldSim) {
+                    $oldSim->refresh();
+                    $balanceAfter = $oldSim->balance - $oldAmount;
+                    $oldSim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $oldSim->id,
+                        'type' => 'deduct',
+                        'amount' => $oldAmount,
+                        'balance_after' => $balanceAfter,
+                        'date' => $transaction->date->format('Y-m-d'),
+                        'note' => 'লেনদেন #'.$transaction->id.' সম্পাদনা — পূর্বের ক্রেডিট ফেরত',
                     ]);
                 }
             }
@@ -379,6 +530,23 @@ class TransactionController extends Controller
                 }
             }
 
+            if ($oldFee > 0 && ! empty($oldSimId)) {
+                $oldSim = Sim::find($oldSimId);
+                if ($oldSim) {
+                    $oldSim->refresh();
+                    $balanceAfter = $oldSim->balance + $oldFee;
+                    $oldSim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $oldSim->id,
+                        'type' => 'add',
+                        'amount' => $oldFee,
+                        'balance_after' => $balanceAfter,
+                        'date' => $transaction->date->format('Y-m-d'),
+                        'note' => 'লেনদেন #'.$transaction->id.' সম্পাদনা — পূর্বের ফি ফেরত',
+                    ]);
+                }
+            }
+
             $transaction->update($validated);
             $newCategory = TransactionCategory::find($validated['transaction_category_id']);
 
@@ -390,6 +558,21 @@ class TransactionController extends Controller
                 SimBalanceHistory::create([
                     'sim_id' => $sim->id,
                     'type' => 'deduct',
+                    'amount' => (float) $validated['amount'],
+                    'balance_after' => $balanceAfter,
+                    'date' => $validated['date'],
+                    'note' => 'লেনদেন #'.$transaction->id.(! empty($validated['note']) ? ' — '.$validated['note'] : ''),
+                ]);
+            }
+
+            if ($newCategory->type === 'credit' && ! empty($validated['sim_id'])) {
+                $sim = Sim::find($validated['sim_id']);
+                $sim->refresh();
+                $balanceAfter = $sim->balance + (float) $validated['amount'];
+                $sim->update(['balance' => $balanceAfter]);
+                SimBalanceHistory::create([
+                    'sim_id' => $sim->id,
+                    'type' => 'add',
                     'amount' => (float) $validated['amount'],
                     'balance_after' => $balanceAfter,
                     'date' => $validated['date'],
@@ -421,17 +604,110 @@ class TransactionController extends Controller
                     }
                 }
             }
+
+            if ($newFeeAmount > 0 && ! empty($validated['sim_id'])) {
+                $feeSim = Sim::find($validated['sim_id']);
+                $feeSim->refresh();
+                $balanceAfter = $feeSim->balance - $newFeeAmount;
+                $feeSim->update(['balance' => $balanceAfter]);
+                SimBalanceHistory::create([
+                    'sim_id' => $feeSim->id,
+                    'type' => 'deduct',
+                    'amount' => $newFeeAmount,
+                    'balance_after' => $balanceAfter,
+                    'date' => $validated['date'],
+                    'note' => 'ফি — লেনদেন #'.$transaction->id,
+                ]);
+            }
         });
 
         return redirect()->route('transactions.index')->with('status', 'লেনদেন সফলভাবে আপডেট করা হয়েছে।');
     }
 
     /**
-     * Remove the specified transaction.
+     * Remove the specified transaction and reverse all SIM balance changes.
      */
     public function destroy(Transaction $transaction): RedirectResponse
     {
-        $transaction->delete();
+        $transaction->load('transactionCategory');
+        $category = $transaction->transactionCategory;
+        $amount = (float) $transaction->amount;
+        $simId = $transaction->sim_id;
+        $commission = (float) ($transaction->commission ?? 0);
+        $commissionSimId = $transaction->commission_sim_id;
+        $fee = (float) ($transaction->fee ?? 0);
+
+        DB::transaction(function () use ($transaction, $category, $amount, $simId, $commission, $commissionSimId, $fee) {
+            if ($category->type === 'debit' && ! empty($simId)) {
+                $sim = Sim::find($simId);
+                if ($sim) {
+                    $sim->refresh();
+                    $balanceAfter = $sim->balance + $amount;
+                    $sim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $sim->id,
+                        'type' => 'add',
+                        'amount' => $amount,
+                        'balance_after' => $balanceAfter,
+                        'date' => $transaction->date->format('Y-m-d'),
+                        'note' => 'লেনদেন #'.$transaction->id.' মুছে ফেলা — বিয়োগ ফেরত',
+                    ]);
+                }
+            }
+
+            if ($category->type === 'credit' && ! empty($simId)) {
+                $sim = Sim::find($simId);
+                if ($sim) {
+                    $sim->refresh();
+                    $balanceAfter = $sim->balance - $amount;
+                    $sim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $sim->id,
+                        'type' => 'deduct',
+                        'amount' => $amount,
+                        'balance_after' => $balanceAfter,
+                        'date' => $transaction->date->format('Y-m-d'),
+                        'note' => 'লেনদেন #'.$transaction->id.' মুছে ফেলা — ক্রেডিট ফেরত',
+                    ]);
+                }
+            }
+
+            if ($commission > 0 && ! empty($commissionSimId)) {
+                $commissionSim = Sim::find($commissionSimId);
+                if ($commissionSim) {
+                    $commissionSim->refresh();
+                    $balanceAfter = $commissionSim->balance - $commission;
+                    $commissionSim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $commissionSim->id,
+                        'type' => 'deduct',
+                        'amount' => $commission,
+                        'balance_after' => $balanceAfter,
+                        'date' => $transaction->date->format('Y-m-d'),
+                        'note' => 'লেনদেন #'.$transaction->id.' মুছে ফেলা — কমিশন ফেরত',
+                    ]);
+                }
+            }
+
+            if ($fee > 0 && ! empty($simId)) {
+                $feeSim = Sim::find($simId);
+                if ($feeSim) {
+                    $feeSim->refresh();
+                    $balanceAfter = $feeSim->balance + $fee;
+                    $feeSim->update(['balance' => $balanceAfter]);
+                    SimBalanceHistory::create([
+                        'sim_id' => $feeSim->id,
+                        'type' => 'add',
+                        'amount' => $fee,
+                        'balance_after' => $balanceAfter,
+                        'date' => $transaction->date->format('Y-m-d'),
+                        'note' => 'লেনদেন #'.$transaction->id.' মুছে ফেলা — ফি ফেরত',
+                    ]);
+                }
+            }
+
+            $transaction->delete();
+        });
 
         return redirect()->route('transactions.index')->with('status', 'লেনদেন সফলভাবে মুছে ফেলা হয়েছে।');
     }
