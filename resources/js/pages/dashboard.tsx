@@ -1,5 +1,6 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AlertTriangle, BarChart3, Eye, Smartphone, Wallet } from 'lucide-react';
+import { useCallback } from 'react';
 import {
     Bar,
     CartesianGrid,
@@ -20,6 +21,13 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -66,21 +74,34 @@ type Props = {
     lowBalanceSims: LowBalanceSim[];
     allSimBalances: SimBalanceRow[];
     transactionChart: TransactionChartRow[];
+    chartYear: number;
+    chartYears: number[];
 };
 
+const DASHBOARD_PATH = '/dashboard';
+
 export default function Dashboard() {
-    const { auth, simStats, lowBalanceSims, allSimBalances, transactionChart } = usePage().props as {
-        auth?: { user?: { name?: string } };
-        simStats?: SimStats;
-        lowBalanceSims?: LowBalanceSim[];
-        allSimBalances?: SimBalanceRow[];
-        transactionChart?: TransactionChartRow[];
-    };
+    const { auth, simStats, lowBalanceSims, allSimBalances, transactionChart, chartYear, chartYears } =
+        usePage().props as {
+            auth?: { user?: { name?: string } };
+            simStats?: SimStats;
+            lowBalanceSims?: LowBalanceSim[];
+            allSimBalances?: SimBalanceRow[];
+            transactionChart?: TransactionChartRow[];
+            chartYear?: number;
+            chartYears?: number[];
+        };
 
     const stats = simStats ?? { total_sims: 0, active_sims: 0, total_balance: '0.00' };
     const lowBalance = lowBalanceSims ?? [];
     const allBalances = allSimBalances ?? [];
     const chartData = transactionChart ?? [];
+    const years = chartYears ?? [new Date().getFullYear()];
+    const currentChartYear = chartYear ?? new Date().getFullYear();
+
+    const onYearChange = useCallback((value: string) => {
+        router.get(DASHBOARD_PATH, { year: value }, { preserveState: false });
+    }, []);
 
     const formatChartMonth = (monthKey: string) => {
         const [y, m] = monthKey.split('-').map(Number);
@@ -177,16 +198,37 @@ export default function Dashboard() {
 
                 <section aria-label="লেনদেনের পারফরম্যান্স">
                     <Card className="border-border">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                <BarChart3 className="size-5 text-muted-foreground" />
-                                লেনদেনের পারফরম্যান্স
-                            </CardTitle>
-                            <CardDescription className="text-base">
-                                গত ১২ মাসের ক্রেডিট, ডেবিট ও কমিশন (মাস অনুযায়ী)
-                            </CardDescription>
+                        <CardHeader className="pb-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                        <BarChart3 className="size-5 text-muted-foreground" />
+                                        লেনদেনের পারফরম্যান্স
+                                    </CardTitle>
+                                    <CardDescription className="text-base mt-1">
+                                        নির্বাচিত বছরের ক্রেডিট, ডেবিট ও কমিশন (মাস অনুযায়ী)
+                                    </CardDescription>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="chart-year" className="text-base font-medium whitespace-nowrap">
+                                        বছর:
+                                    </label>
+                                    <Select value={String(currentChartYear)} onValueChange={onYearChange}>
+                                        <SelectTrigger id="chart-year" className="w-[120px] h-10 text-base">
+                                            <SelectValue placeholder="বছর" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {years.map((y) => (
+                                                <SelectItem key={y} value={String(y)}>
+                                                    {y}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
                         </CardHeader>
-                        <CardContent className="pt-4">
+                        <CardContent className="pt-0">
                             {chartDataWithLabels.length === 0 ? (
                                 <p className="py-12 text-center text-base text-muted-foreground">
                                     এখনও কোনো লেনদেন নেই। লেনদেন যোগ করলে এখানে গ্রাফ দেখাবে।
