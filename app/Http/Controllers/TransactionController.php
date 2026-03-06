@@ -26,7 +26,13 @@ class TransactionController extends Controller
 
         if ($request->filled('search')) {
             $term = '%'.$request->search.'%';
-            $query->where('customer_number', 'like', $term);
+            $query->where(function ($q) use ($term) {
+                $q->where('customer_number', 'like', $term)
+                    ->orWhereHas('sim', function ($q2) use ($term) {
+                        $q2->where('name', 'like', $term)
+                            ->orWhere('sim_number', 'like', $term);
+                    });
+            });
         }
 
         if ($request->filled('month')) {
@@ -106,12 +112,11 @@ class TransactionController extends Controller
                 'type_label' => TransactionCategory::TYPES[$c->type] ?? $c->type,
             ]);
 
-        $sims = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
+        $sims = Sim::query()->orderBy('created_at', 'desc')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'sim_number' => $s->sim_number,
             'sim_name' => $s->name,
             'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
-            'balance' => $s->balance,
         ]);
 
         return Inertia::render('transactions/create', [
@@ -341,12 +346,11 @@ class TransactionController extends Controller
                 'type_label' => TransactionCategory::TYPES[$c->type] ?? $c->type,
             ]);
 
-        $sims = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
+        $sims = Sim::query()->orderBy('created_at', 'desc')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'sim_number' => $s->sim_number,
             'sim_name' => $s->name,
             'operator_label' => Sim::OPERATORS[$s->operator] ?? $s->operator,
-            'balance' => $s->balance,
         ]);
 
         return Inertia::render('transactions/edit', [

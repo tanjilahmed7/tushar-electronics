@@ -213,12 +213,12 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-3">
                                 <div className="relative flex-1 space-y-2" ref={suggestionRef}>
                                     <label htmlFor="search" className="text-base font-medium">
-                                        গ্রাহক নম্বর দিয়ে খুঁজুন
+                                        গ্রাহক নম্বর বা সিমের নাম দিয়ে খুঁজুন
                                     </label>
                                     <Input
                                         id="search"
                                         type="text"
-                                        placeholder="গ্রাহক নম্বর লিখুন..."
+                                        placeholder="গ্রাহক নম্বর বা সিমের নাম লিখুন..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}

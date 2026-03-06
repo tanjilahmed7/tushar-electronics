@@ -41,7 +41,7 @@ type TransactionRow = {
     status: string;
 };
 
-type SimOption = { id: number; sim_number: string; sim_name: string | null; operator_label: string; balance: string };
+type SimOption = { id: number; sim_number: string; sim_name: string | null; operator_label: string };
 
 type Props = {
     categories: CategoryOption[];
@@ -377,7 +377,7 @@ function TransactionRowFields({
                             ) : (
                                 filteredSims.map((s) => (
                                     <SelectItem key={s.id} value={String(s.id)}>
-                                        {s.sim_name ? `${s.sim_name} — ব্যালেন্স: ${s.balance}` : `${s.sim_number} (${s.operator_label}) — ব্যালেন্স: ${s.balance}`}
+                                        {s.sim_name ? `${s.sim_name} (${s.sim_number})` : `${s.sim_number} (${s.operator_label})`}
                                     </SelectItem>
                                 ))
                             )}
