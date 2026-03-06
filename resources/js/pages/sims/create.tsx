@@ -26,14 +26,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    operators: Record<string, string>;
     statuses: Record<string, string>;
 };
 
-export default function SimsCreate({ operators, statuses }: Props) {
+export default function SimsCreate({ statuses }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
-        operator: '',
         sim_number: '',
         status: 'active',
         balance: '0',
@@ -82,28 +80,6 @@ export default function SimsCreate({ operators, statuses }: Props) {
                                         autoComplete="off"
                                     />
                                     <InputError message={errors.name} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="operator" className="text-base font-medium">
-                                        অপারেটর *
-                                    </Label>
-                                    <Select
-                                        value={data.operator}
-                                        onValueChange={(v) => setData('operator', v)}
-                                        required
-                                    >
-                                        <SelectTrigger id="operator" className="h-12 text-base">
-                                            <SelectValue placeholder="অপারেটর নির্বাচন করুন" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {Object.entries(operators).map(([value, label]) => (
-                                                <SelectItem key={value} value={value}>
-                                                    {label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.operator} />
                                 </div>
 
                                 <div className="space-y-2">

@@ -54,7 +54,6 @@ class SimController extends Controller
     public function create(): Response
     {
         return Inertia::render('sims/create', [
-            'operators' => Sim::OPERATORS,
             'statuses' => Sim::STATUSES,
         ]);
     }
@@ -66,13 +65,16 @@ class SimController extends Controller
     {
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:100'],
-            'operator' => ['required', 'string', 'in:'.implode(',', array_keys(Sim::OPERATORS))],
+            'operator' => ['nullable', 'string', 'in:'.implode(',', array_keys(Sim::OPERATORS))],
             'sim_number' => ['required', 'string', 'max:50'],
             'status' => ['required', 'string', 'in:'.implode(',', array_keys(Sim::STATUSES))],
             'balance' => ['nullable', 'numeric', 'min:0'],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
         $validated['balance'] = (float) ($validated['balance'] ?? 0);
+        if (empty($validated['operator'])) {
+            $validated['operator'] = array_keys(Sim::OPERATORS)[0];
+        }
 
         Sim::create($validated);
 

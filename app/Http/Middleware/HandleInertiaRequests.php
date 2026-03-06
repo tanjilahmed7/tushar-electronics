@@ -23,7 +23,15 @@ class HandleInertiaRequests extends Middleware
         'transactions.index',
         'transactions.create',
         'transactions.edit',
+        'sim-category-report.index',
         'commission.index',
+        'reports.index',
+        'reports.transaction-by-category',
+        'reports.fee-summary',
+        'reports.sim-balance-movement',
+        'reports.category-performance',
+        'reports.customer-summary',
+        'reports.commission-fee-summary',
     ];
 
     public function handle(Request $request, \Closure $next): Response

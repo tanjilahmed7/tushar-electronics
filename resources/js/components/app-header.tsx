@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, Smartphone, Tags, Wallet } from 'lucide-react';
+import { BarChart3, BookOpen, Folder, LayoutGrid, Menu, Search, Smartphone, Tags, Wallet } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -60,6 +60,11 @@ const mainNavItems: NavItem[] = [
         title: 'লেনদেন',
         href: '/transactions',
         icon: Wallet,
+    },
+    {
+        title: 'সিম–ক্যাটাগরি রিপোর্ট',
+        href: '/sim-category-report',
+        icon: BarChart3,
     },
 ];
 

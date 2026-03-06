@@ -2,6 +2,14 @@
 
 use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Reports\CategoryPerformanceReportController;
+use App\Http\Controllers\Reports\CommissionFeeSummaryReportController;
+use App\Http\Controllers\Reports\CustomerSummaryReportController;
+use App\Http\Controllers\Reports\FeeSummaryReportController;
+use App\Http\Controllers\Reports\ReportsIndexController;
+use App\Http\Controllers\Reports\SimBalanceMovementReportController;
+use App\Http\Controllers\Reports\TransactionByCategoryReportController;
+use App\Http\Controllers\SimCategoryReportController;
 use App\Http\Controllers\SimController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
@@ -16,6 +24,15 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
+    Route::get('reports', ReportsIndexController::class)->name('reports.index');
+    Route::get('reports/transaction-by-category', TransactionByCategoryReportController::class)->name('reports.transaction-by-category');
+    Route::get('reports/fee-summary', FeeSummaryReportController::class)->name('reports.fee-summary');
+    Route::get('reports/sim-balance-movement', SimBalanceMovementReportController::class)->name('reports.sim-balance-movement');
+    Route::get('reports/category-performance', CategoryPerformanceReportController::class)->name('reports.category-performance');
+    Route::get('reports/customer-summary', CustomerSummaryReportController::class)->name('reports.customer-summary');
+    Route::get('reports/commission-fee-summary', CommissionFeeSummaryReportController::class)->name('reports.commission-fee-summary');
+
+    Route::get('sim-category-report', [SimCategoryReportController::class, 'index'])->name('sim-category-report.index');
     Route::get('commission', [CommissionController::class, 'index'])->name('commission.index');
 
     Route::get('sims', [SimController::class, 'index'])->name('sims.index');
