@@ -26,6 +26,14 @@ class DashboardController extends Controller
             : $currentYear;
         $year = max(2000, min(2100, $year));
 
+        $month = $request->input('month');
+        $month = $month && preg_match('/^\d{4}-\d{2}$/', (string) $month) ? (string) $month : null;
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+        $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
+        $to = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
+
         $sims = Sim::all();
         $totalSims = $sims->count();
         $activeSims = $sims->where('status', 'active')->count();
@@ -44,7 +52,7 @@ class DashboardController extends Controller
             ])
             ->all();
 
-        $transactionChart = $this->transactionChartData($year);
+        $transactionChart = $this->transactionChartData($year, $from, $to, $month);
         $chartYears = $this->availableChartYears();
 
         return Inertia::render('dashboard', [
@@ -57,6 +65,9 @@ class DashboardController extends Controller
             'transactionChart' => $transactionChart,
             'chartYear' => $year,
             'chartYears' => $chartYears,
+            'chartMonth' => $month,
+            'chartFrom' => $from,
+            'chartTo' => $to,
         ]);
     }
 
@@ -79,54 +90,113 @@ class DashboardController extends Controller
     }
 
     /**
-     * Monthly transaction totals (credit, debit, commission) for the given year (Jan–Dec).
+     * Transaction totals for the selected period.
      *
-     * @return array<int, array{month_key: string, month_label: string, credit: float, debit: float, commission: float, transaction_count: int}>
+     * - If from/to is provided, groups by day (YYYY-MM-DD) within the range.
+     * - Otherwise, groups by month (YYYY-MM) for the given year.
+     *
+     * Includes credit, debit, commission, fee and derived profit (commission − fee).
+     *
+     * @return array<int, array{
+     *     month_key: string,
+     *     month_label: string,
+     *     credit: float,
+     *     debit: float,
+     *     commission: float,
+     *     fee: float,
+     *     profit: float,
+     *     transaction_count: int
+     * }>
      */
-    private function transactionChartData(int $year): array
+    private function transactionChartData(int $year, ?string $from = null, ?string $to = null, ?string $month = null): array
     {
-        $start = Carbon::createFromDate($year, 1, 1)->startOfDay();
-        $end = Carbon::createFromDate($year, 12, 31)->endOfDay();
         $isSqlite = DB::connection()->getDriverName() === 'sqlite';
 
-        if ($isSqlite) {
-            $monthExpr = "strftime('%Y-%m', transactions.date)";
+        $useDayWise = (bool) ($from || $to || $month);
+
+        if ($month) {
+            [$y, $m] = array_map('intval', explode('-', $month, 2));
+            $start = Carbon::createFromDate($y, $m, 1)->startOfDay();
+            $end = Carbon::createFromDate($y, $m, 1)->endOfMonth()->endOfDay();
+        } elseif ($from || $to) {
+            $start = $from ? Carbon::parse($from)->startOfDay() : Carbon::parse((string) $to)->startOfDay();
+            $end = $to ? Carbon::parse($to)->endOfDay() : Carbon::parse((string) $from)->endOfDay();
         } else {
-            $monthExpr = "DATE_FORMAT(transactions.date, '%Y-%m')";
+            $start = Carbon::createFromDate($year, 1, 1)->startOfDay();
+            $end = Carbon::createFromDate($year, 12, 31)->endOfDay();
+        }
+
+        if ($isSqlite) {
+            $periodExpr = $useDayWise
+                ? "strftime('%Y-%m-%d', transactions.date)"
+                : "strftime('%Y-%m', transactions.date)";
+        } else {
+            $periodExpr = $useDayWise
+                ? "DATE_FORMAT(transactions.date, '%Y-%m-%d')"
+                : "DATE_FORMAT(transactions.date, '%Y-%m')";
         }
 
         $rows = Transaction::query()
             ->join('transaction_categories', 'transactions.transaction_category_id', '=', 'transaction_categories.id')
             ->whereBetween('transactions.date', [$start, $end])
-            ->selectRaw("{$monthExpr} as month_key")
+            ->selectRaw("{$periodExpr} as month_key")
             ->selectRaw("SUM(CASE WHEN transaction_categories.type = ? THEN transactions.amount ELSE 0 END) as credit", ['credit'])
             ->selectRaw("SUM(CASE WHEN transaction_categories.type = ? THEN transactions.amount ELSE 0 END) as debit", ['debit'])
             ->selectRaw('SUM(COALESCE(transactions.commission, 0)) as commission')
+            ->selectRaw('SUM(COALESCE(transactions.fee, 0)) as fee')
             ->selectRaw('COUNT(transactions.id) as transaction_count')
-            ->groupByRaw($monthExpr)
-            ->orderByRaw($monthExpr)
+            ->groupByRaw($periodExpr)
+            ->orderByRaw($periodExpr)
             ->get();
 
         $months = [];
-        foreach (range(1, self::CHART_MONTHS) as $month) {
-            $date = Carbon::createFromDate($year, $month, 1);
-            $key = $date->format('Y-m');
-            $months[$key] = [
-                'month_key' => $key,
-                'month_label' => $date->translatedFormat('F Y'),
-                'credit' => 0.0,
-                'debit' => 0.0,
-                'commission' => 0.0,
-                'transaction_count' => 0,
-            ];
+        if ($useDayWise) {
+            $cursor = $start->copy()->startOfDay();
+            $last = $end->copy()->startOfDay();
+            while ($cursor->lte($last)) {
+                $key = $cursor->format('Y-m-d');
+                $months[$key] = [
+                    'month_key' => $key,
+                    'month_label' => $cursor->translatedFormat('j F Y'),
+                    'credit' => 0.0,
+                    'debit' => 0.0,
+                    'commission' => 0.0,
+                    'fee' => 0.0,
+                    'profit' => 0.0,
+                    'transaction_count' => 0,
+                ];
+                $cursor->addDay();
+            }
+        } else {
+            foreach (range(1, self::CHART_MONTHS) as $month) {
+                $date = Carbon::createFromDate($year, $month, 1);
+                $key = $date->format('Y-m');
+                $months[$key] = [
+                    'month_key' => $key,
+                    'month_label' => $date->translatedFormat('F Y'),
+                    'credit' => 0.0,
+                    'debit' => 0.0,
+                    'commission' => 0.0,
+                    'fee' => 0.0,
+                    'profit' => 0.0,
+                    'transaction_count' => 0,
+                ];
+            }
         }
 
         foreach ($rows as $row) {
             $key = $row->month_key;
             if (isset($months[$key])) {
-                $months[$key]['credit'] = (float) $row->credit;
-                $months[$key]['debit'] = (float) $row->debit;
-                $months[$key]['commission'] = (float) $row->commission;
+                $credit = (float) $row->credit;
+                $debit = (float) $row->debit;
+                $commission = (float) $row->commission;
+                $fee = (float) $row->fee;
+
+                $months[$key]['credit'] = $credit;
+                $months[$key]['debit'] = $debit;
+                $months[$key]['commission'] = $commission;
+                $months[$key]['fee'] = $fee;
+                $months[$key]['profit'] = $commission - $fee;
                 $months[$key]['transaction_count'] = (int) $row->transaction_count;
             }
         }

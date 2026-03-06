@@ -13,12 +13,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { BarChart3, Eye, Smartphone, Wallet } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     Bar,
     CartesianGrid,
@@ -59,6 +60,8 @@ type TransactionChartRow = {
     credit: number;
     debit: number;
     commission: number;
+    fee?: number;
+    profit?: number;
     transaction_count: number;
 };
 
@@ -68,6 +71,9 @@ type Props = {
     transactionChart: TransactionChartRow[];
     chartYear: number;
     chartYears: number[];
+    chartMonth?: string | null;
+    chartFrom?: string | null;
+    chartTo?: string | null;
 };
 
 const DASHBOARD_PATH = '/dashboard';
@@ -80,6 +86,9 @@ export default function Dashboard() {
         transactionChart,
         chartYear,
         chartYears,
+        chartMonth,
+        chartFrom,
+        chartTo,
     } = usePage().props as {
         auth?: { user?: { name?: string } };
         simStats?: SimStats;
@@ -87,6 +96,9 @@ export default function Dashboard() {
         transactionChart?: TransactionChartRow[];
         chartYear?: number;
         chartYears?: number[];
+        chartMonth?: string | null;
+        chartFrom?: string | null;
+        chartTo?: string | null;
     };
 
     const stats = simStats ?? {
@@ -98,18 +110,69 @@ export default function Dashboard() {
     const chartData = transactionChart ?? [];
     const years = chartYears ?? [new Date().getFullYear()];
     const currentChartYear = chartYear ?? new Date().getFullYear();
+    const [monthFilter, setMonthFilter] = useState<string>(chartMonth ?? '');
+    const [from, setFrom] = useState<string>(chartFrom ?? '');
+    const [to, setTo] = useState<string>(chartTo ?? '');
+
+    useEffect(() => {
+        setMonthFilter(chartMonth ?? '');
+    }, [chartMonth]);
+    useEffect(() => {
+        setFrom(chartFrom ?? '');
+    }, [chartFrom]);
+    useEffect(() => {
+        setTo(chartTo ?? '');
+    }, [chartTo]);
 
     const onYearChange = useCallback((value: string) => {
-        router.get(DASHBOARD_PATH, { year: value }, { preserveState: false });
+        setMonthFilter('');
+        setFrom('');
+        setTo('');
+        router.get(
+            DASHBOARD_PATH,
+            { year: value, from: undefined, to: undefined },
+            { preserveState: false }
+        );
     }, []);
 
+    const onMonthChange = useCallback((value: string) => {
+        setMonthFilter(value);
+        setFrom('');
+        setTo('');
+        router.get(
+            DASHBOARD_PATH,
+            { month: value || undefined, year: undefined, from: undefined, to: undefined },
+            { preserveState: false }
+        );
+    }, []);
+
+    const onDateApply = useCallback(() => {
+        setMonthFilter('');
+        router.get(
+            DASHBOARD_PATH,
+            {
+                from: from || undefined,
+                to: to || undefined,
+                year: undefined,
+            },
+            { preserveState: false }
+        );
+    }, [from, to]);
+
     const formatChartMonth = (monthKey: string) => {
-        const [y, m] = monthKey.split('-').map(Number);
-        const d = new Date(y, m - 1, 1);
+        const parts = monthKey.split('-').map(Number);
+        if (parts.length === 3) {
+            const [y, m, d] = parts;
+            return new Intl.DateTimeFormat('bn-BD', {
+                day: '2-digit',
+                month: 'short',
+            }).format(new Date(y, m - 1, d));
+        }
+        const [y, m] = parts;
         return new Intl.DateTimeFormat('bn-BD', {
             month: 'short',
             year: 'numeric',
-        }).format(d);
+        }).format(new Date(y, m - 1, 1));
     };
 
     const chartDataWithLabels = chartData.map((row) => ({
@@ -225,38 +288,99 @@ export default function Dashboard() {
                                         লেনদেনের পারফরম্যান্স
                                     </CardTitle>
                                     <CardDescription className="mt-1 text-base">
-                                        নির্বাচিত বছরের ক্রেডিট, ডেবিট ও কমিশন
-                                        (মাস অনুযায়ী)
+                                        লাভ (কমিশন − ফি){' '}
+                                        {monthFilter || from || to
+                                            ? '(দিন অনুযায়ী)'
+                                            : '(মাস অনুযায়ী)'}
                                     </CardDescription>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <label
-                                        htmlFor="chart-year"
-                                        className="text-base font-medium whitespace-nowrap"
-                                    >
-                                        বছর:
-                                    </label>
-                                    <Select
-                                        value={String(currentChartYear)}
-                                        onValueChange={onYearChange}
-                                    >
-                                        <SelectTrigger
-                                            id="chart-year"
-                                            className="h-10 w-[120px] text-base"
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <label
+                                            htmlFor="chart-year"
+                                            className="text-base font-medium whitespace-nowrap"
                                         >
-                                            <SelectValue placeholder="বছর" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {years.map((y) => (
-                                                <SelectItem
-                                                    key={y}
-                                                    value={String(y)}
-                                                >
-                                                    {y}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                            বছর:
+                                        </label>
+                                        <Select
+                                            value={String(currentChartYear)}
+                                            onValueChange={onYearChange}
+                                            disabled={Boolean(monthFilter || from || to)}
+                                        >
+                                            <SelectTrigger
+                                                id="chart-year"
+                                                className="h-10 w-[120px] text-base"
+                                            >
+                                                <SelectValue placeholder="বছর" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {years.map((y) => (
+                                                    <SelectItem
+                                                        key={y}
+                                                        value={String(y)}
+                                                    >
+                                                        {y}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <label
+                                            htmlFor="chart-month"
+                                            className="text-base font-medium whitespace-nowrap"
+                                        >
+                                            মাস:
+                                        </label>
+                                        <Input
+                                            id="chart-month"
+                                            type="month"
+                                            value={monthFilter}
+                                            onChange={(e) => onMonthChange(e.target.value)}
+                                            className="h-10 w-[150px] text-base"
+                                        />
+                                    </div>
+                                    <div className="flex items-end gap-2">
+                                        <div className="space-y-1">
+                                            <label
+                                                htmlFor="chart-from"
+                                                className="text-base font-medium whitespace-nowrap"
+                                            >
+                                                তারিখ থেকে
+                                            </label>
+                                            <Input
+                                                id="chart-from"
+                                                type="date"
+                                                value={from}
+                                                onChange={(e) => setFrom(e.target.value)}
+                                                className="h-10 w-[150px] text-base"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label
+                                                htmlFor="chart-to"
+                                                className="text-base font-medium whitespace-nowrap"
+                                            >
+                                                তারিখ পর্যন্ত
+                                            </label>
+                                            <Input
+                                                id="chart-to"
+                                                type="date"
+                                                value={to}
+                                                onChange={(e) => setTo(e.target.value)}
+                                                className="h-10 w-[150px] text-base"
+                                            />
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-10 text-base w-fit"
+                                            onClick={onDateApply}
+                                            disabled={!from && !to}
+                                        >
+                                            দেখুন
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </CardHeader>
@@ -305,11 +429,13 @@ export default function Dashboard() {
                                                     name: string,
                                                 ) => [
                                                     formatCurrency(value),
-                                                    name === 'credit'
-                                                        ? 'ক্রেডিট'
-                                                        : name === 'debit'
-                                                          ? 'ডেবিট'
-                                                          : 'কমিশন',
+                                                    name === 'profit'
+                                                        ? 'লাভ'
+                                                        : name === 'commission'
+                                                          ? 'কমিশন'
+                                                          : name === 'fee'
+                                                            ? 'ফি'
+                                                            : name,
                                                 ]}
                                                 labelFormatter={(_, payload) =>
                                                     payload?.[0]?.payload
@@ -323,32 +449,19 @@ export default function Dashboard() {
                                             <Legend
                                                 wrapperStyle={{ fontSize: 13 }}
                                                 formatter={(value) =>
-                                                    value === 'credit'
-                                                        ? 'ক্রেডিট'
-                                                        : value === 'debit'
-                                                          ? 'ডেবিট'
-                                                          : value ===
-                                                              'commission'
-                                                            ? 'কমিশন'
+                                                    value === 'profit'
+                                                        ? 'লাভ'
+                                                        : value === 'commission'
+                                                          ? 'কমিশন'
+                                                          : value === 'fee'
+                                                            ? 'ফি'
                                                             : value
                                                 }
                                             />
-                                            <Bar
-                                                dataKey="credit"
-                                                fill="var(--chart-1)"
-                                                name="credit"
-                                                radius={[4, 4, 0, 0]}
-                                            />
-                                            <Bar
-                                                dataKey="debit"
-                                                fill="var(--chart-2)"
-                                                name="debit"
-                                                radius={[4, 4, 0, 0]}
-                                            />
                                             <Line
                                                 type="monotone"
-                                                dataKey="commission"
-                                                name="commission"
+                                                dataKey="profit"
+                                                name="profit"
                                                 stroke="var(--chart-3)"
                                                 strokeWidth={2}
                                                 dot={{ r: 4 }}
