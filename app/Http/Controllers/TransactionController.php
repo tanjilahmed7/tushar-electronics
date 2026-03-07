@@ -154,9 +154,8 @@ class TransactionController extends Controller
             'commission' => ['nullable', 'numeric', 'min:0'],
             'commission_sim_id' => ['nullable', 'exists:sims,id'],
             'fee' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['nullable', 'string', 'in:pending,success'],
         ]);
-        $validated['status'] = $validated['status'] ?? Transaction::STATUS_SUCCESS;
+        $validated['status'] = Transaction::STATUS_SUCCESS;
 
         $category = TransactionCategory::find($validated['transaction_category_id']);
         $feeAmount = isset($validated['fee']) ? (float) $validated['fee'] : 0;
@@ -192,7 +191,6 @@ class TransactionController extends Controller
             'transactions.*.commission' => ['nullable', 'numeric', 'min:0'],
             'transactions.*.commission_sim_id' => ['nullable', 'exists:sims,id'],
             'transactions.*.fee' => ['nullable', 'numeric', 'min:0'],
-            'transactions.*.status' => ['nullable', 'string', 'in:pending,success'],
         ]);
 
         $feeAmounts = [];
@@ -210,7 +208,7 @@ class TransactionController extends Controller
 
         DB::transaction(function () use ($validated) {
             foreach ($validated['transactions'] as $row) {
-                $row['status'] = $row['status'] ?? Transaction::STATUS_SUCCESS;
+                $row['status'] = Transaction::STATUS_SUCCESS;
                 $category = TransactionCategory::find($row['transaction_category_id']);
                 $t = Transaction::create($row);
 

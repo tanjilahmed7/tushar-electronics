@@ -44,7 +44,6 @@ type TransactionRow = {
     note: string;
     commission: string;
     fee: string;
-    status: string;
 };
 
 type SimOption = {
@@ -74,7 +73,6 @@ const defaultRow = (): TransactionRow => ({
     note: '',
     commission: '',
     fee: '',
-    status: 'pending',
 });
 
 const simSearchMatch = (s: SimOption, q: string): boolean => {
@@ -171,7 +169,6 @@ export default function TransactionsCreate({ categories, sims }: Props) {
                         t.fee && String(t.fee).trim() !== ''
                             ? Number(t.fee)
                             : null,
-                    status: t.status || 'pending',
                 })),
             }),
         });
@@ -492,25 +489,6 @@ function TransactionRowFields({
                         className="h-11 w-full text-base"
                     />
                     <InputError message={err('date')} />
-                </div>
-                <div className="space-y-2">
-                    <Label className="text-base font-medium">স্ট্যাটাস</Label>
-                    <Select
-                        value={row.status || 'pending'}
-                        onValueChange={(v) => onUpdate('status', v)}
-                    >
-                        <SelectTrigger className="h-11 w-full text-base">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="pending">
-                                পেন্ডিং (ব্যালেন্স আপডেট হবে না)
-                            </SelectItem>
-                            <SelectItem value="success">
-                                সফল (ব্যালেন্স এখনই আপডেট)
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
                 <div className="space-y-2 sm:col-span-2 lg:col-span-1">
                     <Label className="text-base font-medium">নোট</Label>
