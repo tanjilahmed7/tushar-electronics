@@ -152,7 +152,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         value={String(data.transaction_category_id)}
                                         onValueChange={(v) => setData('transaction_category_id', v)}
                                     >
-                                        <SelectTrigger id="transaction_category_id" className="h-12 text-base">
+                                        <SelectTrigger id="transaction_category_id" className="h-12 w-full text-base">
                                             <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -193,7 +193,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         value={data.sim_id ? String(data.sim_id) : '__none__'}
                                         onValueChange={(v) => setData('sim_id', v === '__none__' ? '' : v)}
                                     >
-                                        <SelectTrigger className="h-12 text-base">
+                                        <SelectTrigger className="h-12 w-full text-base">
                                             <SelectValue placeholder="সিম নির্বাচন করুন (ঐচ্ছিক)" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -239,7 +239,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         onChange={(e) => setData('customer_number', e.target.value)}
                                         type="text"
                                         placeholder="গ্রাহক নম্বর"
-                                        className="h-12 text-base"
+                                        className="h-12 w-full text-base"
                                         autoComplete="off"
                                     />
                                     <InputError message={errors.customer_number} />
@@ -273,7 +273,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         min="0"
                                         step="0.01"
                                         placeholder="০"
-                                        className="h-12 text-base"
+                                        className="h-12 w-full text-base"
                                         autoComplete="off"
                                     />
                                     <InputError message={errors.amount} />
@@ -289,7 +289,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         onChange={(e) => setData('date', e.target.value)}
                                         type="date"
                                         required
-                                        className="h-12 text-base"
+                                        className="h-12 w-full text-base"
                                     />
                                     <InputError message={errors.date} />
                                 </div>
@@ -321,7 +321,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         min="0"
                                         step="0.01"
                                         placeholder="০"
-                                        className="h-12 text-base"
+                                        className="h-12 w-full text-base"
                                         autoComplete="off"
                                     />
                                     <p className="text-xs text-muted-foreground">
@@ -342,7 +342,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         min="0"
                                         step="0.01"
                                         placeholder="০"
-                                        className="h-12 text-base"
+                                        className="h-12 w-full text-base"
                                         autoComplete="off"
                                     />
                                     <p className="text-xs text-muted-foreground">

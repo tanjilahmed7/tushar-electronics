@@ -1,9 +1,12 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import { useCallback, useMemo, useState } from 'react';
-import { Plus, Search, Trash2 } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -17,6 +20,9 @@ import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Plus, Search, Trash2 } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
 const TRANSACTIONS_PATH = '/transactions';
 const TRANSACTIONS_BULK_PATH = '/transactions/bulk';
@@ -41,7 +47,12 @@ type TransactionRow = {
     status: string;
 };
 
-type SimOption = { id: number; sim_number: string; sim_name: string | null; operator_label: string };
+type SimOption = {
+    id: number;
+    sim_number: string;
+    sim_name: string | null;
+    operator_label: string;
+};
 
 type Props = {
     categories: CategoryOption[];
@@ -94,24 +105,28 @@ export default function TransactionsCreate({ categories, sims }: Props) {
 
     const filteredSims = useMemo(
         () => sims.filter((s) => simSearchMatch(s, simSearch)),
-        [sims, simSearch]
+        [sims, simSearch],
     );
 
     const filteredCategories = useMemo(
         () => categories.filter((c) => categorySearchMatch(c, categorySearch)),
-        [categories, categorySearch]
+        [categories, categorySearch],
     );
 
     const updateRow = useCallback(
-        (index: number, field: keyof TransactionRow, value: string | number) => {
+        (
+            index: number,
+            field: keyof TransactionRow,
+            value: string | number,
+        ) => {
             setData(
                 'transactions',
                 data.transactions.map((row, i) =>
-                    i === index ? { ...row, [field]: value } : row
-                )
+                    i === index ? { ...row, [field]: value } : row,
+                ),
             );
         },
-        [data.transactions, setData]
+        [data.transactions, setData],
     );
 
     const addRow = useCallback(() => {
@@ -123,10 +138,10 @@ export default function TransactionsCreate({ categories, sims }: Props) {
             if (data.transactions.length <= 1) return;
             setData(
                 'transactions',
-                data.transactions.filter((_, i) => i !== index)
+                data.transactions.filter((_, i) => i !== index),
             );
         },
-        [data.transactions, setData]
+        [data.transactions, setData],
     );
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -136,11 +151,26 @@ export default function TransactionsCreate({ categories, sims }: Props) {
                 transactions: d.transactions.map((t) => ({
                     ...t,
                     transaction_category_id: Number(t.transaction_category_id),
-                    sim_id: t.sim_id && String(t.sim_id).trim() !== '' ? Number(t.sim_id) : null,
+                    sim_id:
+                        t.sim_id && String(t.sim_id).trim() !== ''
+                            ? Number(t.sim_id)
+                            : null,
                     amount: Number(t.amount),
-                    commission: t.commission && String(t.commission).trim() !== '' ? Number(t.commission) : null,
-                    commission_sim_id: (t.commission && parseFloat(String(t.commission)) > 0 && t.sim_id && String(t.sim_id).trim() !== '') ? Number(t.sim_id) : null,
-                    fee: t.fee && String(t.fee).trim() !== '' ? Number(t.fee) : null,
+                    commission:
+                        t.commission && String(t.commission).trim() !== ''
+                            ? Number(t.commission)
+                            : null,
+                    commission_sim_id:
+                        t.commission &&
+                        parseFloat(String(t.commission)) > 0 &&
+                        t.sim_id &&
+                        String(t.sim_id).trim() !== ''
+                            ? Number(t.sim_id)
+                            : null,
+                    fee:
+                        t.fee && String(t.fee).trim() !== ''
+                            ? Number(t.fee)
+                            : null,
                     status: t.status || 'pending',
                 })),
             }),
@@ -160,14 +190,19 @@ export default function TransactionsCreate({ categories, sims }: Props) {
                         নতুন লেনদেন যোগ করুন
                     </h1>
                     <p className="mt-1 text-base text-muted-foreground">
-                        একসাথে একাধিক লেনদেন যোগ করতে নিচে সারি যোগ করুন। ক্যাটাগরি নির্বাচন করলে ধরন (ক্রেডিট/ডেবিট) স্বয়ংক্রিয়ভাবে নির্ধারিত হবে।
+                        একসাথে একাধিক লেনদেন যোগ করতে নিচে সারি যোগ করুন।
+                        ক্যাটাগরি নির্বাচন করলে ধরন (ক্রেডিট/ডেবিট)
+                        স্বয়ংক্রিয়ভাবে নির্ধারিত হবে।
                     </p>
                 </div>
 
                 {categories.length === 0 && (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-base text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
                         প্রথমে{' '}
-                        <Link href={CATEGORIES_PATH} className="font-medium underline">
+                        <Link
+                            href={CATEGORIES_PATH}
+                            className="font-medium underline"
+                        >
                             লেনদেনের ক্যাটাগরি
                         </Link>{' '}
                         তৈরি করুন। তারপর এখানে লেনদেন যোগ করতে পারবেন।
@@ -176,13 +211,19 @@ export default function TransactionsCreate({ categories, sims }: Props) {
 
                 <Card className="w-full border-border">
                     <CardHeader>
-                        <CardTitle className="text-lg font-semibold">লেনদেনের তথ্য</CardTitle>
+                        <CardTitle className="text-lg font-semibold">
+                            লেনদেনের তথ্য
+                        </CardTitle>
                         <CardDescription className="text-base">
-                            প্রতিটি সারিতে একটি লেনদেন। আরও যোগ করতে নিচের বাটন ব্যবহার করুন।
+                            প্রতিটি সারিতে একটি লেনদেন। আরও যোগ করতে নিচের বাটন
+                            ব্যবহার করুন।
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                        <form
+                            onSubmit={handleSubmit}
+                            className="flex flex-col gap-6"
+                        >
                             <div className="flex flex-col gap-6">
                                 {data.transactions.map((row, index) => (
                                     <TransactionRowFields
@@ -198,7 +239,9 @@ export default function TransactionsCreate({ categories, sims }: Props) {
                                         simSearch={simSearch}
                                         setSimSearch={setSimSearch}
                                         errors={errors}
-                                        onUpdate={(field, value) => updateRow(index, field, value)}
+                                        onUpdate={(field, value) =>
+                                            updateRow(index, field, value)
+                                        }
                                         onRemove={() => removeRow(index)}
                                         canRemove={data.transactions.length > 1}
                                     />
@@ -217,22 +260,30 @@ export default function TransactionsCreate({ categories, sims }: Props) {
 
                             {(hasAnyRowError || errors.transactions) && (
                                 <p className="text-base text-destructive">
-                                    {errors.transactions || 'উপরের কিছু ক্ষেত্রে ত্রুটি আছে। সংশোধন করুন।'}
+                                    {errors.transactions ||
+                                        'উপরের কিছু ক্ষেত্রে ত্রুটি আছে। সংশোধন করুন।'}
                                 </p>
                             )}
 
                             <div className="flex gap-3">
                                 <Button
                                     type="submit"
-                                    className="h-12 text-base px-6"
-                                    disabled={processing || categories.length === 0}
+                                    className="h-12 px-6 text-base"
+                                    disabled={
+                                        processing || categories.length === 0
+                                    }
                                 >
                                     {processing && <Spinner className="mr-2" />}
                                     {data.transactions.length === 1
                                         ? 'লেনদেন সংরক্ষণ করুন'
                                         : `${data.transactions.length}টি লেনদেন সংরক্ষণ করুন`}
                                 </Button>
-                                <Button type="button" variant="outline" asChild className="h-12 text-base">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    asChild
+                                    className="h-12 text-base"
+                                >
                                     <Link href={TRANSACTIONS_PATH}>বাতিল</Link>
                                 </Button>
                             </div>
@@ -278,8 +329,11 @@ function TransactionRowFields({
     canRemove,
 }: RowProps) {
     const selectedCategory = useMemo(
-        () => categories.find((c) => String(c.id) === String(row.transaction_category_id)),
-        [categories, row.transaction_category_id]
+        () =>
+            categories.find(
+                (c) => String(c.id) === String(row.transaction_category_id),
+            ),
+        [categories, row.transaction_category_id],
     );
 
     const err = (field: string) => errors[`transactions.${index}.${field}`];
@@ -308,9 +362,11 @@ function TransactionRowFields({
                     <Label className="text-base font-medium">ক্যাটাগরি *</Label>
                     <Select
                         value={String(row.transaction_category_id)}
-                        onValueChange={(v) => onUpdate('transaction_category_id', v)}
+                        onValueChange={(v) =>
+                            onUpdate('transaction_category_id', v)
+                        }
                     >
-                        <SelectTrigger className="h-11 text-base">
+                        <SelectTrigger className="h-11 w-full text-base">
                             <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
                         </SelectTrigger>
                         <SelectContent>
@@ -319,11 +375,13 @@ function TransactionRowFields({
                                 onPointerDown={(e) => e.stopPropagation()}
                             >
                                 <div className="relative">
-                                    <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         placeholder="ক্যাটাগরি খুঁজুন (নাম/ধরন)..."
                                         value={categorySearch}
-                                        onChange={(e) => setCategorySearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setCategorySearch(e.target.value)
+                                        }
                                         className="h-9 pl-8 text-sm"
                                         autoComplete="off"
                                     />
@@ -345,12 +403,16 @@ function TransactionRowFields({
                     <InputError message={err('transaction_category_id')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">সিম (ডেবিট হলে ব্যালেন্স কাটা হবে)</Label>
+                    <Label className="text-base font-medium">
+                        সিম (ডেবিট হলে ব্যালেন্স কাটা হবে)
+                    </Label>
                     <Select
                         value={row.sim_id ? String(row.sim_id) : '__none__'}
-                        onValueChange={(v) => onUpdate('sim_id', v === '__none__' ? '' : v)}
+                        onValueChange={(v) =>
+                            onUpdate('sim_id', v === '__none__' ? '' : v)
+                        }
                     >
-                        <SelectTrigger className="h-11 text-base">
+                        <SelectTrigger className="h-11 w-full text-base">
                             <SelectValue placeholder="সিম নির্বাচন করুন (ঐচ্ছিক)" />
                         </SelectTrigger>
                         <SelectContent>
@@ -359,17 +421,21 @@ function TransactionRowFields({
                                 onPointerDown={(e) => e.stopPropagation()}
                             >
                                 <div className="relative">
-                                    <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         placeholder="সিম খুঁজুন (নাম/নম্বর/অপারেটর)..."
                                         value={simSearch}
-                                        onChange={(e) => setSimSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setSimSearch(e.target.value)
+                                        }
                                         className="h-9 pl-8 text-sm"
                                         autoComplete="off"
                                     />
                                 </div>
                             </div>
-                            <SelectItem value="__none__">কোনো সিম নয়</SelectItem>
+                            <SelectItem value="__none__">
+                                কোনো সিম নয়
+                            </SelectItem>
                             {filteredSims.length === 0 ? (
                                 <div className="px-2 py-3 text-center text-sm text-muted-foreground">
                                     কোনো সিম পাওয়া যায়নি
@@ -377,7 +443,9 @@ function TransactionRowFields({
                             ) : (
                                 filteredSims.map((s) => (
                                     <SelectItem key={s.id} value={String(s.id)}>
-                                        {s.sim_name ? `${s.sim_name} (${s.sim_number})` : `${s.sim_number} (${s.operator_label})`}
+                                        {s.sim_name
+                                            ? `${s.sim_name} (${s.sim_number})`
+                                            : `${s.sim_number} (${s.operator_label})`}
                                     </SelectItem>
                                 ))
                             )}
@@ -386,13 +454,17 @@ function TransactionRowFields({
                     <InputError message={err('sim_id')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">গ্রাহক নম্বর</Label>
+                    <Label className="text-base font-medium">
+                        গ্রাহক নম্বর
+                    </Label>
                     <Input
                         value={row.customer_number}
-                        onChange={(e) => onUpdate('customer_number', e.target.value)}
+                        onChange={(e) =>
+                            onUpdate('customer_number', e.target.value)
+                        }
                         type="text"
                         placeholder="গ্রাহক নম্বর"
-                        className="h-11 text-base"
+                        className="h-11 w-full text-base"
                         autoComplete="off"
                     />
                     <InputError message={err('customer_number')} />
@@ -406,7 +478,7 @@ function TransactionRowFields({
                         min="0"
                         step="0.01"
                         placeholder="০"
-                        className="h-11 text-base"
+                        className="h-11 w-full text-base"
                         autoComplete="off"
                     />
                     <InputError message={err('amount')} />
@@ -417,7 +489,7 @@ function TransactionRowFields({
                         value={row.date}
                         onChange={(e) => onUpdate('date', e.target.value)}
                         type="date"
-                        className="h-11 text-base"
+                        className="h-11 w-full text-base"
                     />
                     <InputError message={err('date')} />
                 </div>
@@ -427,17 +499,18 @@ function TransactionRowFields({
                         value={row.status || 'pending'}
                         onValueChange={(v) => onUpdate('status', v)}
                     >
-                        <SelectTrigger className="h-11 text-base">
+                        <SelectTrigger className="h-11 w-full text-base">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="pending">পেন্ডিং (ব্যালেন্স আপডেট হবে না)</SelectItem>
-                            <SelectItem value="success">সফল (ব্যালেন্স এখনই আপডেট)</SelectItem>
+                            <SelectItem value="pending">
+                                পেন্ডিং (ব্যালেন্স আপডেট হবে না)
+                            </SelectItem>
+                            <SelectItem value="success">
+                                সফল (ব্যালেন্স এখনই আপডেট)
+                            </SelectItem>
                         </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">
-                        পেন্ডিং রাখলে পরে লেনদেন তালিকা থেকে সফল করুন চাপে ব্যালেন্স আপডেট করা যাবে
-                    </p>
                 </div>
                 <div className="space-y-2 sm:col-span-2 lg:col-span-1">
                     <Label className="text-base font-medium">নোট</Label>
@@ -446,13 +519,15 @@ function TransactionRowFields({
                         onChange={(e) => onUpdate('note', e.target.value)}
                         type="text"
                         placeholder="নোট (ঐচ্ছিক)"
-                        className="h-11 text-base"
+                        className="h-11 w-full text-base"
                         autoComplete="off"
                     />
                     <InputError message={err('note')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">কমিশন (ঐচ্ছিক)</Label>
+                    <Label className="text-base font-medium">
+                        কমিশন (ঐচ্ছিক)
+                    </Label>
                     <Input
                         value={row.commission}
                         onChange={(e) => onUpdate('commission', e.target.value)}
@@ -460,12 +535,10 @@ function TransactionRowFields({
                         min="0"
                         step="0.01"
                         placeholder="০"
-                        className="h-11 text-base"
+                        className="h-11 w-full text-base"
                         autoComplete="off"
                     />
-                    <p className="text-xs text-muted-foreground">
-                        কমিশন নির্বাচিত সিমের ব্যালেন্সে ক্রেডিট যোগ করবে (উপরের সিম যেটা সিলেক্ট করেছেন)
-                    </p>
+
                     <InputError message={err('commission')} />
                 </div>
                 <div className="space-y-2">
@@ -477,12 +550,9 @@ function TransactionRowFields({
                         min="0"
                         step="0.01"
                         placeholder="০"
-                        className="h-11 text-base"
+                        className="h-11 w-full text-base"
                         autoComplete="off"
                     />
-                    <p className="text-xs text-muted-foreground">
-                        ফি নির্বাচিত সিমের ব্যালেন্স থেকে ডেবিট হবে (কাটা যাবে)
-                    </p>
                     <InputError message={err('fee')} />
                 </div>
             </div>
