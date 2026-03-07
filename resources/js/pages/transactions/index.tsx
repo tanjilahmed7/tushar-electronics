@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -157,16 +157,6 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
         }
     }, []);
 
-    const [togglingId, setTogglingId] = useState<number | null>(null);
-
-    const handleStatusToggle = useCallback((id: number, newStatus: string) => {
-        setTogglingId(id);
-        router.put(`${TRANSACTIONS_PATH}/${id}/status`, { status: newStatus }, {
-            preserveScroll: true,
-            onFinish: () => setTogglingId(null),
-        });
-    }, []);
-
     const { data: rows, current_page, last_page, per_page, total, from, to, links } = transactions;
     const activeSearch = (filters.search ?? '').trim().toLowerCase();
 
@@ -304,7 +294,10 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                             ধরন
                                         </th>
                                         <th className="px-6 py-4 text-left font-semibold text-foreground">
-                                            স্ট্যাটাস
+                                            ক্যাটাগরি
+                                        </th>
+                                        <th className="px-6 py-4 text-left font-semibold text-foreground">
+                                            নোট
                                         </th>
                                         <th className="px-6 py-4 text-right font-semibold text-foreground">
                                             ক্রিয়া
@@ -314,7 +307,7 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                 <tbody>
                                     {rows.length === 0 ? (
                                         <tr>
-                                            <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
+                                            <td colSpan={10} className="px-6 py-12 text-center text-muted-foreground">
                                                 কোনো লেনদেন পাওয়া যায়নি। প্রথমে{' '}
                                                 <Link href={CATEGORIES_PATH} className="text-primary underline">
                                                     লেনদেনের ক্যাটাগরি
@@ -363,41 +356,11 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                                         {t.type_label}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-1 rounded-md border border-border p-0.5 w-fit">
-                                                        <button
-                                                            type="button"
-                                                            disabled={togglingId === t.id}
-                                                            onClick={() => t.status !== 'pending' && handleStatusToggle(t.id, 'pending')}
-                                                            className={`rounded px-2 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
-                                                                t.status === 'pending'
-                                                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
-                                                                    : 'text-muted-foreground hover:bg-muted'
-                                                            }`}
-                                                        >
-                                                            {togglingId === t.id && t.status === 'success' ? (
-                                                                <Loader2 className="size-4 animate-spin" />
-                                                            ) : (
-                                                                'পেন্ডিং'
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            disabled={togglingId === t.id}
-                                                            onClick={() => t.status !== 'success' && handleStatusToggle(t.id, 'success')}
-                                                            className={`rounded px-2 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
-                                                                t.status === 'success'
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
-                                                                    : 'text-muted-foreground hover:bg-muted'
-                                                            }`}
-                                                        >
-                                                            {togglingId === t.id && t.status === 'pending' ? (
-                                                                <Loader2 className="size-4 animate-spin" />
-                                                            ) : (
-                                                                'সফল'
-                                                            )}
-                                                        </button>
-                                                    </div>
+                                                <td className="px-6 py-4 text-muted-foreground">
+                                                    {t.category_name ?? '—'}
+                                                </td>
+                                                <td className="px-6 py-4 max-w-[200px] truncate text-muted-foreground" title={t.note ?? undefined}>
+                                                    {t.note ?? '—'}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex justify-end gap-2 flex-wrap">
