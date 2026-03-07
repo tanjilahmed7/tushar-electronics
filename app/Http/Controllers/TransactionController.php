@@ -26,12 +26,22 @@ class TransactionController extends Controller
 
         if ($request->filled('search')) {
             $term = '%'.$request->search.'%';
-            $query->where(function ($q) use ($term) {
-                $q->where('customer_number', 'like', $term)
+            $driver = DB::connection()->getDriverName();
+            $castType = $driver === 'sqlite' ? 'TEXT' : 'CHAR';
+
+            $query->where(function ($q) use ($term, $castType) {
+                $q->where('transactions.customer_number', 'like', $term)
+                    ->orWhere('transactions.note', 'like', $term)
                     ->orWhereHas('sim', function ($q2) use ($term) {
                         $q2->where('name', 'like', $term)
                             ->orWhere('sim_number', 'like', $term);
-                    });
+                    })
+                    ->orWhereHas('transactionCategory', function ($q2) use ($term) {
+                        $q2->where('name', 'like', $term);
+                    })
+                    ->orWhereRaw("CAST(transactions.amount AS {$castType}) LIKE ?", [$term])
+                    ->orWhereRaw("CAST(COALESCE(transactions.commission, 0) AS {$castType}) LIKE ?", [$term])
+                    ->orWhereRaw("CAST(COALESCE(transactions.fee, 0) AS {$castType}) LIKE ?", [$term]);
             });
         }
 
