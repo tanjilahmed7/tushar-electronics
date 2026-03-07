@@ -17,6 +17,15 @@ class CustomerSummaryReportController extends Controller
         $from = $request->input('from');
         $to = $request->input('to');
 
+        $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
+        $to = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
+
+        if (! $from && ! $to && (! $month || ! preg_match('/^(\d{4})-(\d{2})$/', (string) $month))) {
+            $today = now()->format('Y-m-d');
+            $from = $today;
+            $to = $today;
+        }
+
         $query = Transaction::query()
             ->join('transaction_categories', 'transactions.transaction_category_id', '=', 'transaction_categories.id')
             ->whereNotNull('customer_number')
@@ -27,14 +36,14 @@ class CustomerSummaryReportController extends Controller
             ->selectRaw('COUNT(transactions.id) as transaction_count')
             ->groupBy('customer_number');
 
-        if ($month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
-            $query->whereYear('transactions.date', (int) $m[1])->whereMonth('transactions.date', (int) $m[2]);
-        }
-        if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+        if ($from) {
             $query->whereDate('transactions.date', '>=', $from);
         }
-        if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+        if ($to) {
             $query->whereDate('transactions.date', '<=', $to);
+        }
+        if ($month && preg_match('/^(\d{4})-(\d{2})$/', (string) $month, $m) && ! $from && ! $to) {
+            $query->whereYear('transactions.date', (int) $m[1])->whereMonth('transactions.date', (int) $m[2]);
         }
 
         $rows = $query->orderByDesc(DB::raw('COUNT(transactions.id)'))->get();

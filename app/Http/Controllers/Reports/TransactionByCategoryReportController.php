@@ -22,6 +22,15 @@ class TransactionByCategoryReportController extends Controller
             $simId = null;
         }
 
+        $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
+        $to = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
+
+        if (! $from && ! $to) {
+            $today = now()->format('Y-m-d');
+            $from = $today;
+            $to = $today;
+        }
+
         $query = Transaction::query()
             ->join('transaction_categories', 'transactions.transaction_category_id', '=', 'transaction_categories.id')
             ->selectRaw('transaction_categories.id as category_id, transaction_categories.name as category_name, transaction_categories.type as category_type')
@@ -30,10 +39,10 @@ class TransactionByCategoryReportController extends Controller
             ->selectRaw('COUNT(transactions.id) as transaction_count')
             ->groupBy('transaction_categories.id', 'transaction_categories.name', 'transaction_categories.type');
 
-        if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+        if ($from) {
             $query->whereDate('transactions.date', '>=', $from);
         }
-        if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+        if ($to) {
             $query->whereDate('transactions.date', '<=', $to);
         }
         if ($simId !== null) {

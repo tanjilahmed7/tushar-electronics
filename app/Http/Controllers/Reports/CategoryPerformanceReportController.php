@@ -16,8 +16,17 @@ class CategoryPerformanceReportController extends Controller
         $from = $request->input('from');
         $to = $request->input('to');
 
-        $start = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) ? $from : now()->subMonths(11)->startOfMonth()->format('Y-m-d');
-        $end = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to) ? $to : now()->format('Y-m-d');
+        $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
+        $to = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
+
+        if (! $from && ! $to) {
+            $today = now()->format('Y-m-d');
+            $from = $today;
+            $to = $today;
+        }
+
+        $start = $from;
+        $end = $to;
 
         $driver = DB::connection()->getDriverName();
         $monthExpr = $driver === 'sqlite' ? "strftime('%Y-%m', transactions.date)" : "DATE_FORMAT(transactions.date, '%Y-%m')";

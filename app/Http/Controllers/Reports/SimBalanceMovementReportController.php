@@ -17,6 +17,15 @@ class SimBalanceMovementReportController extends Controller
         $from = $request->input('from');
         $to = $request->input('to');
 
+        $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
+        $to = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
+
+        if (! $from && ! $to) {
+            $today = now()->format('Y-m-d');
+            $from = $today;
+            $to = $today;
+        }
+
         $sims = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'label' => $s->name ? "{$s->name} ({$s->sim_number})" : $s->sim_number,
@@ -29,10 +38,10 @@ class SimBalanceMovementReportController extends Controller
                 ->orderBy('date', 'desc')
                 ->orderBy('id', 'desc');
 
-            if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+            if ($from) {
                 $query->whereDate('date', '>=', $from);
             }
-            if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+            if ($to) {
                 $query->whereDate('date', '<=', $to);
             }
 
