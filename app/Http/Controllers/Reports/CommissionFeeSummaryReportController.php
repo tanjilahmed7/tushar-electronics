@@ -23,15 +23,24 @@ class CommissionFeeSummaryReportController extends Controller
             $simId = null;
         }
 
+        $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
+        $to   = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
+
+        if (! $from && ! $to && (! $month || ! preg_match('/^(\d{4})-(\d{2})$/', (string) $month))) {
+            $today = now()->format('Y-m-d');
+            $from = $today;
+            $to   = $today;
+        }
+
         $baseQuery = Transaction::query();
 
-        if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+        if ($from) {
             $baseQuery->whereDate('date', '>=', $from);
         }
-        if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+        if ($to) {
             $baseQuery->whereDate('date', '<=', $to);
         }
-        if (! $from && ! $to && $month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
+        if ($month && preg_match('/^(\d{4})-(\d{2})$/', (string) $month, $m) && ! $from && ! $to) {
             $baseQuery->whereYear('date', (int) $m[1])->whereMonth('date', (int) $m[2]);
         }
         if ($simId !== null) {

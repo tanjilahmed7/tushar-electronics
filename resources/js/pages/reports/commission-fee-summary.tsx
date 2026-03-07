@@ -51,7 +51,7 @@ function periodLabel(month: string, from: string, to: string): string {
     if (from || to) {
         const fmt = (d: string) =>
             new Intl.DateTimeFormat('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d));
-        if (from && to) return `${fmt(from)} – ${fmt(to)}`;
+        if (from && to) return from === to ? fmt(from) : `${fmt(from)} – ${fmt(to)}`;
         if (from) return `${fmt(from)} থেকে`;
         return `${fmt(to!)} পর্যন্ত`;
     }
@@ -216,7 +216,9 @@ export default function CommissionFeeSummaryReport({
 
                 <Card className="border-border">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-lg font-semibold">সিম অনুযায়ী</CardTitle>
+                        <CardTitle className="text-lg font-semibold">
+                            সিম অনুযায়ী ({label})
+                        </CardTitle>
                         <CardDescription className="text-base">
                             প্রতিটি সিমে কমিশন, ফি ও নিট
                         </CardDescription>
