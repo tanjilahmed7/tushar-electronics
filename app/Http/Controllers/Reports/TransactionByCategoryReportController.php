@@ -13,6 +13,7 @@ class TransactionByCategoryReportController extends Controller
 {
     public function __invoke(Request $request): Response
     {
+        $month = $request->input('month');
         $from = $request->input('from');
         $to = $request->input('to');
         $simId = $request->input('sim_id');
@@ -25,10 +26,8 @@ class TransactionByCategoryReportController extends Controller
         $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
         $to = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
 
-        if (! $from && ! $to) {
-            $today = now()->format('Y-m-d');
-            $from = $today;
-            $to = $today;
+        if (! $from && ! $to && (! $month || ! preg_match('/^(\d{4})-(\d{2})$/', (string) $month))) {
+            $month = now()->format('Y-m');
         }
 
         $query = Transaction::query()
@@ -44,6 +43,9 @@ class TransactionByCategoryReportController extends Controller
         }
         if ($to) {
             $query->whereDate('transactions.date', '<=', $to);
+        }
+        if (! $from && ! $to && $month && preg_match('/^(\d{4})-(\d{2})$/', (string) $month, $m)) {
+            $query->whereYear('transactions.date', (int) $m[1])->whereMonth('transactions.date', (int) $m[2]);
         }
         if ($simId !== null) {
             $query->where('transactions.sim_id', $simId);
@@ -69,6 +71,7 @@ class TransactionByCategoryReportController extends Controller
             'rows' => $data,
             'sims' => $sims,
             'filters' => [
+                'month' => $month,
                 'from' => $from,
                 'to' => $to,
                 'sim_id' => $simId !== null ? (string) $simId : null,

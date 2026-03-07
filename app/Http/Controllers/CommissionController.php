@@ -16,17 +16,26 @@ class CommissionController extends Controller
         $from  = $request->input('from');
         $to    = $request->input('to');
 
+        $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
+        $to   = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
+
+        if (! $from && ! $to && (! $month || ! preg_match('/^(\d{4})-(\d{2})$/', (string) $month))) {
+            $today = now()->format('Y-m-d');
+            $from = $today;
+            $to   = $today;
+        }
+
         $query = Transaction::query()
             ->whereNotNull('commission')
             ->where('commission', '>', 0);
 
-        if ($from && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+        if ($from) {
             $query->whereDate('date', '>=', $from);
         }
-        if ($to && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+        if ($to) {
             $query->whereDate('date', '<=', $to);
         }
-        if (! $from && ! $to && $month && preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
+        if ($month && preg_match('/^(\d{4})-(\d{2})$/', (string) $month, $m) && ! $from && ! $to) {
             $query->whereYear('date', (int) $m[1])
                 ->whereMonth('date', (int) $m[2]);
         }

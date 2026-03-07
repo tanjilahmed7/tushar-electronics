@@ -35,8 +35,23 @@ type Row = {
 type Props = {
     rows: Row[];
     sims: SimOption[];
-    filters: { from?: string; to?: string; sim_id?: string | null };
+    filters: { month?: string; from?: string; to?: string; sim_id?: string | null };
 };
+
+function periodLabel(month: string, from: string, to: string): string {
+    if (from || to) {
+        const fmt = (d: string) =>
+            new Intl.DateTimeFormat('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d));
+        if (from && to) return from === to ? fmt(from) : `${fmt(from)} – ${fmt(to)}`;
+        if (from) return `${fmt(from)} থেকে`;
+        return `${fmt(to!)} পর্যন্ত`;
+    }
+    if (month) {
+        const [y, m] = month.split('-').map(Number);
+        return new Intl.DateTimeFormat('bn-BD', { month: 'long', year: 'numeric' }).format(new Date(y, m - 1, 1));
+    }
+    return 'সব সময়';
+}
 
 const breadcrumbs = (): BreadcrumbItem[] => [
     { title: 'ড্যাশবোর্ড', href: dashboard() },
@@ -49,6 +64,7 @@ export default function TransactionByCategoryReport({
     sims,
     filters,
 }: Props) {
+    const [month, setMonth] = useState(filters.month ?? '');
     const [from, setFrom] = useState(filters.from ?? '');
     const [to, setTo] = useState(filters.to ?? '');
     const [simId, setSimId] = useState(filters.sim_id ?? '');
@@ -57,13 +73,16 @@ export default function TransactionByCategoryReport({
         router.get(
             PATH,
             {
+                month: (!from && !to && month) ? month : undefined,
                 from: from || undefined,
                 to: to || undefined,
                 sim_id: simId || undefined,
             },
             { preserveState: false }
         );
-    }, [from, to, simId]);
+    }, [month, from, to, simId]);
+
+    const label = periodLabel(filters.month ?? '', filters.from ?? '', filters.to ?? '');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs()}>
@@ -82,6 +101,18 @@ export default function TransactionByCategoryReport({
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg font-semibold">ফিল্টার</CardTitle>
                         <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
+                            <div className="space-y-2 sm:w-52">
+                                <label htmlFor="month" className="text-base font-medium">
+                                    মাস
+                                </label>
+                                <Input
+                                    id="month"
+                                    type="month"
+                                    value={month}
+                                    onChange={(e) => { setMonth(e.target.value); setFrom(''); setTo(''); }}
+                                    className="h-12 text-base"
+                                />
+                            </div>
                             <div className="space-y-2 sm:w-44">
                                 <label htmlFor="from" className="text-base font-medium">
                                     থেকে (তারিখ)
@@ -90,10 +121,11 @@ export default function TransactionByCategoryReport({
                                     id="from"
                                     type="date"
                                     value={from}
-                                    onChange={(e) => setFrom(e.target.value)}
+                                    onChange={(e) => { setFrom(e.target.value); setMonth(''); }}
                                     className="h-12 text-base"
                                 />
                             </div>
+                            <span className="mb-3 text-muted-foreground">–</span>
                             <div className="space-y-2 sm:w-44">
                                 <label htmlFor="to" className="text-base font-medium">
                                     পর্যন্ত (তারিখ)
@@ -102,7 +134,7 @@ export default function TransactionByCategoryReport({
                                     id="to"
                                     type="date"
                                     value={to}
-                                    onChange={(e) => setTo(e.target.value)}
+                                    onChange={(e) => { setTo(e.target.value); setMonth(''); }}
                                     className="h-12 text-base"
                                 />
                             </div>
@@ -139,7 +171,7 @@ export default function TransactionByCategoryReport({
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                             <Tags className="size-5" />
-                            ক্যাটাগরি অনুযায়ী সংক্ষিপ্ত
+                            ক্যাটাগরি অনুযায়ী সংক্ষিপ্ত ({label})
                         </CardTitle>
                         <CardDescription className="text-base">
                             মোট ক্রেডিট, ডেবিট ও লেনদেন সংখ্যা
