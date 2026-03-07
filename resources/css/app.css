@@ -61,97 +61,94 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Elderly-friendly green palette */
+/* Background #a0ebcd */
 :root {
-    /* Requested palette */
-    --background: #eef3f1; /* Very Light Sage */
-    --foreground: #2b2b2b; /* Text – Dark Gray */
+    --background: #a0ebcd;
+    --foreground: #031a10;
 
-    --primary: #2f7d65; /* Icon / Highlight – Medium Green */
+    --primary: #1b5d4a;
     --primary-foreground: #ffffff;
 
-    --secondary: #5f8f8b; /* Muted Teal */
-    --secondary-foreground: #0f2f28;
+    --secondary: #2d8f6f;
+    --secondary-foreground: #ffffff;
 
-    --accent: #e9c46a; /* Soft Gold */
-    --accent-foreground: var(--foreground);
+    --accent: #031a10;
+    --accent-foreground: #70e2b4;
 
-    /* Supporting tokens (derived to match palette) */
-    --card: #eef3f1; /* Very Light Sage */
-    --card-foreground: var(--foreground);
-    --popover: #ffffff;
-    --popover-foreground: var(--foreground);
+    --card: #8ae8c4;
+    --card-foreground: #031a10;
+    --popover: #a0ecd0;
+    --popover-foreground: #031a10;
 
-    --muted: #e3ece9;
-    --muted-foreground: #4a5a55;
+    --muted: #65d9a8;
+    --muted-foreground: #052a18;
 
     --destructive: #b42318;
     --destructive-foreground: #ffffff;
 
-    --border: #d8e3de; /* Soft Green Gray */
-    --input: #d8e3de;
-    --ring: #2f7d65;
+    --border: #3bc993;
+    --input: #4dd4a0;
+    --ring: #1b5d4a;
 
-    --chart-1: #2f7d65;
-    --chart-2: #5f8f8b;
-    --chart-3: #e9c46a;
-    --chart-4: #3f7a67;
-    --chart-5: #8fb7b3;
+    --chart-1: #1b5d4a;
+    --chart-2: #2d8f6f;
+    --chart-3: #0d2818;
+    --chart-4: #3bc993;
+    --chart-5: #4dd4a0;
 
     --radius: 0.5rem;
 
-    --sidebar: #e7efec;
-    --sidebar-foreground: var(--foreground);
+    --sidebar: #65d9a8;
+    --sidebar-foreground: #031a10;
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: #dde7e3;
-    --sidebar-accent-foreground: var(--foreground);
-    --sidebar-border: #cfe0da;
+    --sidebar-accent: #4dd4a0;
+    --sidebar-accent-foreground: #031a10;
+    --sidebar-border: #3bc993;
     --sidebar-ring: var(--ring);
 }
 
 .dark {
-    /* Dark theme tuned to the same green brand */
-    --background: #0f1a17;
-    --foreground: #eef3f1;
+    --background: #0d2818;
+    --foreground: #70e2b4;
 
-    --card: #14221e;
+    --card: #142e20;
     --card-foreground: var(--foreground);
-    --popover: #14221e;
+    --popover: #142e20;
     --popover-foreground: var(--foreground);
 
-    --primary: #7fb7a8;
-    --primary-foreground: #0b1411;
+    --primary: #70e2b4;
+    --primary-foreground: #0d2818;
 
-    --secondary: #25413a;
-    --secondary-foreground: #eef3f1;
+    --secondary: #2d8f6f;
+    --secondary-foreground: #70e2b4;
 
-    --muted: #1a2b26;
-    --muted-foreground: #b7c8c3;
+    --muted: #1a4d35;
+    --muted-foreground: #65d9a8;
 
-    --accent: #e9c46a;
-    --accent-foreground: #1b1b1b;
+    --accent: #3bc993;
+    --accent-foreground: #0d2818;
 
     --destructive: #f97066;
-    --destructive-foreground: #1b1b1b;
+    --destructive-foreground: #0d2818;
 
-    --border: #223a34;
-    --input: #223a34;
-    --ring: #7fb7a8;
+    --border: #1a4d35;
+    --input: #1a4d35;
+    --ring: #70e2b4;
 
-    --chart-1: #7fb7a8;
-    --chart-2: #5f8f8b;
-    --chart-3: #e9c46a;
-    --chart-4: #a6d4c8;
-    --chart-5: #2f5d50;
+    --chart-1: #70e2b4;
+    --chart-2: #4dd4a0;
+    --chart-3: #3bc993;
+    --chart-4: #65d9a8;
+    --chart-5: #2d8f6f;
 
-    --sidebar: #101c19;
+    --sidebar: #0f3320;
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: #172623;
+    --sidebar-accent: #1a4d35;
     --sidebar-accent-foreground: var(--foreground);
-    --sidebar-border: #223a34;
+    --sidebar-border: #1a4d35;
     --sidebar-ring: var(--ring);
 }
 
@@ -169,6 +166,20 @@
         font-size: 24px;
         line-height: 1.65;
         -webkit-font-smoothing: antialiased;
+        color: var(--foreground);
+    }
+
+    /* High-contrast text on mint background */
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--foreground);
+    }
+
+    /* Sidebar: ensure labels and nav text are readable (override faded opacity) */
+    [data-sidebar="sidebar"] [data-sidebar="group-label"],
+    [data-sidebar="sidebar"] [data-sidebar="menu-button"],
+    [data-sidebar="sidebar"] [data-sidebar="menu-item"] {
+        color: var(--sidebar-foreground) !important;
+        opacity: 1 !important;
     }
 
     /* Senior-friendly: larger touch targets and clearer focus */
