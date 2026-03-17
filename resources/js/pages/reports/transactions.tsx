@@ -1,5 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Pencil, Search, Wallet } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Search, Wallet } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -22,66 +22,33 @@ import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
 const PATH = '/reports/transactions';
-const TRANSACTIONS_PATH = '/transactions';
 
 const BANGLADESH_TZ = 'Asia/Dhaka';
 
-type TransactionRow = {
-    id: number;
-    category_name: string;
+type SummaryRow = {
     type: string;
     type_label: string;
-    sim_id: number | null;
-    sim_number: string | null;
-    sim_name: string | null;
-    customer_number: string | null;
-    amount: string;
-    commission: string | null;
-    fee: string | null;
-    date: string;
-    note: string | null;
-    status: string;
-    status_label: string;
-    created_at: string;
+    total_amount: string;
+    total_commission: string;
+    total_fee: string;
+    transaction_count: number;
 };
 
-type PaginationLink = {
-    url: string | null;
-    label: string;
-    active: boolean;
-};
-
-type PaginatedTransactions = {
-    data: TransactionRow[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    from: number | null;
-    to: number | null;
-    links: PaginationLink[];
+type GrandTotal = {
+    total_amount: string;
+    total_commission: string;
+    total_fee: string;
+    transaction_count: number;
 };
 
 type SimOption = { id: number; label: string };
 
 type Props = {
-    transactions: PaginatedTransactions;
+    summaryByType: SummaryRow[];
+    grandTotal: GrandTotal;
     sims: SimOption[];
     filters: { search?: string; month?: string; from?: string; to?: string; sim_id?: string | null };
 };
-
-function formatDateBn(dateStr: string): string {
-    try {
-        const [d, m, y] = dateStr.split('/').map(Number);
-        const dateObj = new Date(y, m - 1, d);
-        const day = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, day: 'numeric' }).format(dateObj);
-        const month = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, month: 'long' }).format(dateObj);
-        const year = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, year: 'numeric' }).format(dateObj);
-        return `${day} ${month}, ${year}`;
-    } catch {
-        return dateStr;
-    }
-}
 
 function formatDateBnFromIso(iso: string): string {
     try {
@@ -93,28 +60,6 @@ function formatDateBnFromIso(iso: string): string {
         return `${day} ${month}, ${year}`;
     } catch {
         return iso;
-    }
-}
-
-function formatDateHuman(dateStr: string, createdAtStr: string): string {
-    try {
-        const [d, m, y] = dateStr.split('/').map(Number);
-        const dateFormatted = formatDateBn(dateStr);
-        const timePart = createdAtStr?.trim().split(/\s+/)[1];
-        if (timePart) {
-            const [hh, min] = timePart.split(':').map(Number);
-            const timeObj = new Date(y, m - 1, d, hh, min);
-            const timeFormatted = new Intl.DateTimeFormat('bn-BD', {
-                timeZone: BANGLADESH_TZ,
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true,
-            }).format(timeObj);
-            return `${dateFormatted}, ${timeFormatted}`;
-        }
-        return dateFormatted;
-    } catch {
-        return `${dateStr} - ${createdAtStr}`;
     }
 }
 
@@ -140,7 +85,8 @@ const breadcrumbs = (): BreadcrumbItem[] => [
 ];
 
 export default function TransactionReport({
-    transactions,
+    summaryByType,
+    grandTotal,
     sims,
     filters,
 }: Props) {
@@ -169,16 +115,6 @@ export default function TransactionReport({
     }, [search, month, from, to, simId]);
 
     const label = periodLabel(filters.month ?? '', filters.from ?? '', filters.to ?? '');
-
-    const {
-        data: rows,
-        current_page,
-        last_page,
-        total,
-        from: pageFrom,
-        to: pageTo,
-        links,
-    } = transactions;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs()}>
@@ -328,10 +264,10 @@ export default function TransactionReport({
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                             <Wallet className="size-5" />
-                            লেনদেন তালিকা ({label})
+                            লেনদেন সংক্ষিপ্ত ({label})
                         </CardTitle>
                         <CardDescription className="text-base">
-                            তারিখ, গ্রাহক, সিম, ক্যাটাগরি ও পরিমাণ অনুযায়ী
+                            পরিমাণ, কমিশন ও ফি ধরন (ক্রেডিট/ডেবিট) অনুযায়ী
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -339,114 +275,72 @@ export default function TransactionReport({
                             <table className="w-full text-base" role="grid">
                                 <thead>
                                     <tr className="border-b border-border bg-muted/50">
-                                        <th className="px-6 py-4 text-left font-semibold text-foreground">তারিখ</th>
-                                        <th className="px-6 py-4 text-left font-semibold text-foreground">গ্রাহক নম্বর</th>
-                                        <th className="px-6 py-4 text-right font-semibold text-foreground">পরিমাণ</th>
-                                        <th className="px-6 py-4 text-right font-semibold text-foreground">কমিশন</th>
-                                        <th className="px-6 py-4 text-right font-semibold text-foreground">ফি</th>
-                                        <th className="px-6 py-4 text-left font-semibold text-foreground">সিমের নাম</th>
                                         <th className="px-6 py-4 text-left font-semibold text-foreground">ধরন</th>
-                                        <th className="px-6 py-4 text-left font-semibold text-foreground">ক্যাটাগরি</th>
-                                        <th className="px-6 py-4 text-left font-semibold text-foreground">নোট</th>
-                                        <th className="px-6 py-4 text-right font-semibold text-foreground">ক্রিয়া</th>
+                                        <th className="px-6 py-4 text-right font-semibold text-foreground">মোট পরিমাণ (৳)</th>
+                                        <th className="px-6 py-4 text-right font-semibold text-foreground">মোট কমিশন (৳)</th>
+                                        <th className="px-6 py-4 text-right font-semibold text-foreground">মোট ফি (৳)</th>
+                                        <th className="px-6 py-4 text-right font-semibold text-foreground">লেনদেন সংখ্যা</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rows.length === 0 ? (
+                                    {summaryByType.length === 0 ? (
                                         <tr>
-                                            <td colSpan={10} className="px-6 py-12 text-center text-muted-foreground">
+                                            <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
                                                 এই ফিল্টারে কোনো লেনদেন নেই।
                                             </td>
                                         </tr>
                                     ) : (
-                                        rows.map((t) => (
-                                            <tr
-                                                key={t.id}
-                                                className="border-b border-border/70 transition-colors hover:bg-muted/30"
-                                            >
-                                                <td className="px-6 py-4 text-muted-foreground">
-                                                    {formatDateHuman(t.date, t.created_at)}
+                                        <>
+                                            {summaryByType.map((row) => (
+                                                <tr
+                                                    key={row.type}
+                                                    className="border-b border-border/70 transition-colors hover:bg-muted/30"
+                                                >
+                                                    <td className="px-6 py-4 font-medium">
+                                                        <span
+                                                            className={
+                                                                row.type === 'credit'
+                                                                    ? 'text-green-700 dark:text-green-400'
+                                                                    : 'text-amber-700 dark:text-amber-400'
+                                                            }
+                                                        >
+                                                            {row.type_label}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right tabular-nums">
+                                                        {row.total_amount}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right tabular-nums">
+                                                        {row.total_commission}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right tabular-nums">
+                                                        {row.total_fee}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right tabular-nums">
+                                                        {row.transaction_count}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            <tr className="border-t-2 border-border bg-muted/30 font-semibold">
+                                                <td className="px-6 py-4">মোট</td>
+                                                <td className="px-6 py-4 text-right tabular-nums">
+                                                    {grandTotal.total_amount}
                                                 </td>
-                                                <td className="px-6 py-4 text-muted-foreground">
-                                                    {t.customer_number ?? '—'}
+                                                <td className="px-6 py-4 text-right tabular-nums">
+                                                    {grandTotal.total_commission}
                                                 </td>
-                                                <td className="px-6 py-4 text-right font-medium">{t.amount}</td>
-                                                <td className="px-6 py-4 text-right tabular-nums text-muted-foreground">
-                                                    {t.commission != null && t.commission !== '' ? `${t.commission} ৳` : '—'}
+                                                <td className="px-6 py-4 text-right tabular-nums">
+                                                    {grandTotal.total_fee}
                                                 </td>
-                                                <td className="px-6 py-4 text-right tabular-nums text-muted-foreground">
-                                                    {t.fee != null && t.fee !== '' ? `${t.fee} ৳` : '—'}
-                                                </td>
-                                                <td className="px-6 py-4 text-muted-foreground">
-                                                    {t.sim_name ?? t.sim_number ?? '—'}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span
-                                                        className={
-                                                            t.type === 'credit'
-                                                                ? 'text-green-700 dark:text-green-400'
-                                                                : 'text-amber-700 dark:text-amber-400'
-                                                        }
-                                                    >
-                                                        {t.type_label}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-muted-foreground">
-                                                    {t.category_name ?? '—'}
-                                                </td>
-                                                <td className="px-6 py-4 max-w-[200px] truncate text-muted-foreground" title={t.note ?? undefined}>
-                                                    {t.note ?? '—'}
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <Button variant="ghost" size="sm" asChild className="h-10 text-base">
-                                                        <Link href={`${TRANSACTIONS_PATH}/${t.id}/edit`}>
-                                                            <Pencil className="size-4" />
-                                                        </Link>
-                                                    </Button>
+                                                <td className="px-6 py-4 text-right tabular-nums">
+                                                    {grandTotal.transaction_count}
                                                 </td>
                                             </tr>
-                                        ))
+                                        </>
                                     )}
                                 </tbody>
                             </table>
                         </div>
-
-                        {last_page > 1 && (
-                            <div className="flex flex-col gap-4 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <p className="text-base text-muted-foreground">
-                                    {pageFrom != null && pageTo != null && (
-                                        <>
-                                            দেখাচ্ছি <span className="font-medium text-foreground">{pageFrom}</span> থেকে{' '}
-                                            <span className="font-medium text-foreground">{pageTo}</span> (মোট{' '}
-                                            <span className="font-medium text-foreground">{total}</span> টি)
-                                        </>
-                                    )}
-                                </p>
-                                <nav className="flex flex-wrap items-center gap-2" aria-label="পেজিনেশন">
-                                    {links.map((link, i) => (
-                                        <span key={i}>
-                                            {link.url ? (
-                                                <Link
-                                                    href={link.url}
-                                                    className={`inline-flex h-10 min-w-10 items-center justify-center rounded-md px-3 text-base font-medium transition-colors ${
-                                                        link.active
-                                                            ? 'bg-primary text-primary-foreground'
-                                                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                                                    }`}
-                                                >
-                                                    <span dangerouslySetInnerHTML={{ __html: link.label }} />
-                                                </Link>
-                                            ) : (
-                                                <span
-                                                    className="inline-flex h-10 min-w-10 cursor-default items-center justify-center rounded-md px-3 text-muted-foreground"
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                                />
-                                            )}
-                                        </span>
-                                    ))}
-                                </nav>
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
             </div>

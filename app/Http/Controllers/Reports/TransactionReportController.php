@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Reports;
 use App\Http\Controllers\Controller;
 use App\Models\Sim;
 use App\Models\Transaction;
-use App\Models\TransactionCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -35,17 +34,14 @@ class TransactionReportController extends Controller
             $to = $today;
         }
 
-        $query = Transaction::query()
-            ->with(['transactionCategory', 'sim'])
-            ->orderBy('date', 'desc')
-            ->orderBy('created_at', 'desc');
+        $baseQuery = Transaction::query()
+            ->join('transaction_categories', 'transactions.transaction_category_id', '=', 'transaction_categories.id');
 
         if ($request->filled('search')) {
             $term = '%'.$request->search.'%';
             $driver = DB::connection()->getDriverName();
             $castType = $driver === 'sqlite' ? 'TEXT' : 'CHAR';
-
-            $query->where(function ($q) use ($term, $castType) {
+            $baseQuery->where(function ($q) use ($term, $castType) {
                 $q->where('transactions.customer_number', 'like', $term)
                     ->orWhere('transactions.note', 'like', $term)
                     ->orWhereHas('sim', function ($q2) use ($term) {
@@ -60,40 +56,48 @@ class TransactionReportController extends Controller
                     ->orWhereRaw("CAST(COALESCE(transactions.fee, 0) AS {$castType}) LIKE ?", [$term]);
             });
         }
-
         if ($from) {
-            $query->whereDate('date', '>=', $from);
+            $baseQuery->whereDate('transactions.date', '>=', $from);
         }
         if ($to) {
-            $query->whereDate('date', '<=', $to);
+            $baseQuery->whereDate('transactions.date', '<=', $to);
         }
         if (! $from && ! $to && $month && preg_match('/^(\d{4})-(\d{2})$/', (string) $month, $m)) {
-            $query->whereYear('date', (int) $m[1])->whereMonth('date', (int) $m[2]);
+            $baseQuery->whereYear('transactions.date', (int) $m[1])->whereMonth('transactions.date', (int) $m[2]);
         }
         if ($simId !== null) {
-            $query->where('transactions.sim_id', $simId);
+            $baseQuery->where('transactions.sim_id', $simId);
         }
 
-        $paginator = $query->paginate(20)->withQueryString();
+        $summaryRows = (clone $baseQuery)
+            ->selectRaw('transaction_categories.type as category_type')
+            ->selectRaw('SUM(transactions.amount) as total_amount')
+            ->selectRaw('SUM(COALESCE(transactions.commission, 0)) as total_commission')
+            ->selectRaw('SUM(COALESCE(transactions.fee, 0)) as total_fee')
+            ->selectRaw('COUNT(transactions.id) as transaction_count')
+            ->groupBy('transaction_categories.type')
+            ->get();
 
-        $paginator->through(fn (Transaction $t) => [
-            'id' => $t->id,
-            'category_name' => $t->transactionCategory->name,
-            'type' => $t->transactionCategory->type,
-            'type_label' => TransactionCategory::TYPES[$t->transactionCategory->type] ?? $t->transactionCategory->type ?? $t->transactionCategory->type,
-            'sim_id' => $t->sim_id,
-            'sim_number' => $t->sim?->sim_number,
-            'sim_name' => $t->sim?->name,
-            'customer_number' => $t->customer_number,
-            'amount' => $t->amount,
-            'commission' => $t->commission,
-            'fee' => $t->fee,
-            'date' => $t->date->format('d/m/Y'),
-            'note' => $t->note,
-            'status' => $t->status,
-            'status_label' => Transaction::STATUSES[$t->status] ?? $t->status,
-            'created_at' => $t->created_at->format('d/m/Y H:i'),
-        ]);
+        $typeLabels = [
+            'credit' => 'ক্রেডিট',
+            'debit' => 'ডেবিট',
+        ];
+
+        $summaryByType = $summaryRows->map(fn ($row) => [
+            'type' => $row->category_type,
+            'type_label' => $typeLabels[$row->category_type] ?? $row->category_type,
+            'total_amount' => (string) number_format((float) $row->total_amount, 2),
+            'total_commission' => (string) number_format((float) $row->total_commission, 2),
+            'total_fee' => (string) number_format((float) $row->total_fee, 2),
+            'transaction_count' => (int) $row->transaction_count,
+        ])->values()->all();
+
+        $grandTotal = [
+            'total_amount' => (string) number_format((float) (clone $baseQuery)->sum('transactions.amount'), 2),
+            'total_commission' => (string) number_format((float) (clone $baseQuery)->sum(DB::raw('COALESCE(transactions.commission, 0)')), 2),
+            'total_fee' => (string) number_format((float) (clone $baseQuery)->sum(DB::raw('COALESCE(transactions.fee, 0)')), 2),
+            'transaction_count' => (int) (clone $baseQuery)->count(),
+        ];
 
         $simOptions = Sim::query()
             ->where('status', 'active')
@@ -107,7 +111,8 @@ class TransactionReportController extends Controller
             ->all();
 
         return Inertia::render('reports/transactions', [
-            'transactions' => $paginator,
+            'summaryByType' => $summaryByType,
+            'grandTotal' => $grandTotal,
             'sims' => $simOptions,
             'filters' => [
                 'search' => $search,
