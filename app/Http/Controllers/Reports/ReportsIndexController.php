@@ -13,6 +13,12 @@ class ReportsIndexController extends Controller
         return Inertia::render('reports/index', [
             'reports' => [
                 [
+                    'title' => 'লেনদেন রিপোর্ট',
+                    'description' => 'তারিখ, সিম ও খুঁজা দিয়ে লেনদেন তালিকা দেখুন',
+                    'href' => '/reports/transactions',
+                    'icon' => 'list',
+                ],
+                [
                     'title' => 'সিম–ক্যাটাগরি রিপোর্ট',
                     'description' => 'প্রতিটি সিমে কোন ক্যাটাগরিতে কতগুলো লেনদেন হয়েছে মাস অনুযায়ী',
                     'href' => '/sim-category-report',

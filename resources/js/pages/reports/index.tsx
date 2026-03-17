@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import {
     BarChart3,
+    List,
     Percent,
     Receipt,
     Tags,
@@ -21,6 +22,7 @@ import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
 const iconMap: Record<string, typeof Tags> = {
+    list: List,
     tags: Tags,
     receipt: Receipt,
     'trending-up': TrendingUp,

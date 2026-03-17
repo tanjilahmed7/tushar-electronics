@@ -9,6 +9,7 @@ use App\Http\Controllers\Reports\FeeSummaryReportController;
 use App\Http\Controllers\Reports\ReportsIndexController;
 use App\Http\Controllers\Reports\SimBalanceMovementReportController;
 use App\Http\Controllers\Reports\TransactionByCategoryReportController;
+use App\Http\Controllers\Reports\TransactionReportController;
 use App\Http\Controllers\SimCategoryReportController;
 use App\Http\Controllers\SimController;
 use App\Http\Controllers\TransactionCategoryController;
@@ -26,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('reports', ReportsIndexController::class)->name('reports.index');
     Route::get('reports/transaction-by-category', TransactionByCategoryReportController::class)->name('reports.transaction-by-category');
+    Route::get('reports/transactions', TransactionReportController::class)->name('reports.transactions');
     Route::get('reports/fee-summary', FeeSummaryReportController::class)->name('reports.fee-summary');
     Route::get('reports/sim-balance-movement', SimBalanceMovementReportController::class)->name('reports.sim-balance-movement');
     Route::get('reports/category-performance', CategoryPerformanceReportController::class)->name('reports.category-performance');
