@@ -509,7 +509,7 @@ export default function Dashboard() {
                                     সিম যোগ করুন।
                                 </p>
                             ) : (
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8">
                                     {allBalances.map((sim) => (
                                         <div
                                             key={sim.id}
