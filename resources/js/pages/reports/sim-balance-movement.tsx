@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { Search, TrendingUp } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import {
@@ -53,6 +53,13 @@ export default function SimBalanceMovementReport({
     const [simId, setSimId] = useState(filters.sim_id ?? '');
     const [from, setFrom] = useState(filters.from ?? '');
     const [to, setTo] = useState(filters.to ?? '');
+    const [simSearch, setSimSearch] = useState('');
+
+    const filteredSims = useMemo(() => {
+        const q = simSearch.trim().toLowerCase();
+        if (!q) return sims;
+        return sims.filter((s) => s.label.toLowerCase().includes(q));
+    }, [sims, simSearch]);
 
     const applyFilter = useCallback(() => {
         router.get(
@@ -98,14 +105,35 @@ export default function SimBalanceMovementReport({
                                         <SelectValue placeholder="সিম নির্বাচন করুন" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <div
+                                            className="sticky top-0 z-10 border-b border-border bg-popover p-1.5"
+                                            onPointerDown={(e) => e.stopPropagation()}
+                                        >
+                                            <div className="relative">
+                                                <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+                                                <Input
+                                                    placeholder="সিম খুঁজুন..."
+                                                    value={simSearch}
+                                                    onChange={(e) => setSimSearch(e.target.value)}
+                                                    className="h-9 pl-8 text-sm"
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+                                        </div>
                                         <SelectItem value="__none__">
                                             সিম নির্বাচন করুন
                                         </SelectItem>
-                                        {sims.map((s) => (
-                                            <SelectItem key={s.id} value={String(s.id)}>
-                                                {s.label}
-                                            </SelectItem>
-                                        ))}
+                                        {filteredSims.length === 0 ? (
+                                            <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                                                কোনো সিম পাওয়া যায়নি
+                                            </div>
+                                        ) : (
+                                            filteredSims.map((s) => (
+                                                <SelectItem key={s.id} value={String(s.id)}>
+                                                    {s.label}
+                                                </SelectItem>
+                                            ))
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>

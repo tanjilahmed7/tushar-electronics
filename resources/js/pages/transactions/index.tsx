@@ -49,7 +49,7 @@ type PaginatedTransactions = {
 
 type Props = {
     transactions: PaginatedTransactions;
-    filters: { search?: string; month?: string };
+    filters: { search?: string; month?: string; from?: string; to?: string };
 };
 
 const breadcrumbs = (): BreadcrumbItem[] => [
@@ -59,17 +59,40 @@ const breadcrumbs = (): BreadcrumbItem[] => [
 
 const BANGLADESH_TZ = 'Asia/Dhaka';
 
-/** Parse backend date (dd/mm/yyyy) and created_at (dd/mm/yyyy HH:mm) into human-readable Bangla text (Bangladesh timezone) */
+/** Format as "৬ মার্চ, ২০২৬" (day, month, year in Bengali) */
+function formatDateBn(dateStr: string): string {
+    try {
+        const [d, m, y] = dateStr.split('/').map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        const day = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, day: 'numeric' }).format(dateObj);
+        const month = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, month: 'long' }).format(dateObj);
+        const year = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, year: 'numeric' }).format(dateObj);
+        return `${day} ${month}, ${year}`;
+    } catch {
+        return dateStr;
+    }
+}
+
+/** Format YYYY-MM-DD as "৬ মার্চ, ২০২৬" */
+function formatDateBnFromIso(iso: string): string {
+    try {
+        const [y, m, d] = iso.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        const day = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, day: 'numeric' }).format(dateObj);
+        const month = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, month: 'long' }).format(dateObj);
+        const year = new Intl.DateTimeFormat('bn-BD', { timeZone: BANGLADESH_TZ, year: 'numeric' }).format(dateObj);
+        return `${day} ${month}, ${year}`;
+    } catch {
+        return iso;
+    }
+}
+
+/** Parse backend date (dd/mm/yyyy) and created_at (dd/mm/yyyy HH:mm) into "৬ মার্চ, ২০২৬" and optional time */
 function formatDateHuman(dateStr: string, createdAtStr: string): string {
     try {
         const [d, m, y] = dateStr.split('/').map(Number);
         const dateObj = new Date(y, m - 1, d);
-        const dateFormatted = new Intl.DateTimeFormat('bn-BD', {
-            timeZone: BANGLADESH_TZ,
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        }).format(dateObj);
+        const dateFormatted = formatDateBn(dateStr);
 
         const timePart = createdAtStr?.trim().split(/\s+/)[1];
         if (timePart) {
@@ -95,6 +118,8 @@ const SEARCH_SUGGESTIONS_URL = '/transactions/search-suggestions';
 export default function TransactionsIndex({ transactions, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [month, setMonth] = useState(filters.month ?? '');
+    const [from, setFrom] = useState(filters.from ?? '');
+    const [to, setTo] = useState(filters.to ?? '');
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -104,10 +129,12 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
         setShowSuggestions(false);
         router.get(TRANSACTIONS_PATH, {
             search: search || undefined,
-            month: month || undefined,
+            month: (!from && !to && month) ? month : undefined,
+            from: from || undefined,
+            to: to || undefined,
             page: 1,
         }, { preserveState: false });
-    }, [search, month]);
+    }, [search, month, from, to]);
 
     useEffect(() => {
         const q = search.trim();
@@ -157,7 +184,16 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
         }
     }, []);
 
-    const { data: rows, current_page, last_page, per_page, total, from, to, links } = transactions;
+    const {
+        data: rows,
+        current_page,
+        last_page,
+        per_page,
+        total,
+        from: pageFrom,
+        to: pageTo,
+        links,
+    } = transactions;
     const activeSearch = (filters.search ?? '').trim().toLowerCase();
 
     const cellMatches = useCallback(
@@ -239,15 +275,40 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                         </div>
                                     )}
                                 </div>
+                                <div className="space-y-2 sm:w-44">
+                                    <label htmlFor="from" className="text-base font-medium">
+                                        থেকে (তারিখ)
+                                    </label>
+                                    <Input
+                                        id="from"
+                                        type="date"
+                                        value={from}
+                                        onChange={(e) => { setFrom(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
+                                <span className="mb-3 text-muted-foreground">–</span>
+                                <div className="space-y-2 sm:w-44">
+                                    <label htmlFor="to" className="text-base font-medium">
+                                        পর্যন্ত (তারিখ)
+                                    </label>
+                                    <Input
+                                        id="to"
+                                        type="date"
+                                        value={to}
+                                        onChange={(e) => { setTo(e.target.value); setMonth(''); }}
+                                        className="h-12 text-base"
+                                    />
+                                </div>
                                 <div className="space-y-2 sm:w-48">
                                     <label htmlFor="month" className="text-base font-medium">
-                                        মাস অনুযায়ী ফিল্টার
+                                        মাস অনুযায়ী
                                     </label>
                                     <Input
                                         id="month"
                                         type="month"
                                         value={month}
-                                        onChange={(e) => setMonth(e.target.value)}
+                                        onChange={(e) => { setMonth(e.target.value); setFrom(''); setTo(''); }}
                                         className="h-12 text-base"
                                     />
                                 </div>
@@ -263,6 +324,31 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                 {activeSearch.length > 0 && (
                     <p className="text-base text-muted-foreground">
                         খুঁজার ফলাফল: <strong className="text-foreground">&quot;{filters.search}&quot;</strong> — যে কলামে মিলেছে সেটি হাইলাইট করা হয়েছে
+                    </p>
+                )}
+
+                {(filters.from || filters.to || filters.month) && (
+                    <p className="text-base text-muted-foreground">
+                        তারিখ ফিল্টার:{' '}
+                        <strong className="text-foreground">
+                            {filters.from || filters.to
+                                ? filters.from && filters.to
+                                    ? filters.from === filters.to
+                                        ? formatDateBnFromIso(filters.from)
+                                        : `${formatDateBnFromIso(filters.from)} – ${formatDateBnFromIso(filters.to)}`
+                                    : filters.from
+                                        ? `${formatDateBnFromIso(filters.from)} থেকে`
+                                        : `${formatDateBnFromIso(filters.to!)} পর্যন্ত`
+                                : filters.month
+                                    ? (() => {
+                                        const [y, m] = filters.month!.split('-').map(Number);
+                                        const dateObj = new Date(y, m - 1, 1);
+                                        const monthName = new Intl.DateTimeFormat('bn-BD', { month: 'long' }).format(dateObj);
+                                        const yearBn = new Intl.DateTimeFormat('bn-BD', { year: 'numeric' }).format(dateObj);
+                                        return `${monthName}, ${yearBn}`;
+                                    })()
+                                    : ''}
+                        </strong>
                     </p>
                 )}
 
@@ -389,10 +475,10 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                         {last_page > 1 && (
                             <div className="flex flex-col gap-4 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-base text-muted-foreground">
-                                    {from != null && to != null && (
+                                    {pageFrom != null && pageTo != null && (
                                         <>
-                                            দেখাচ্ছি <span className="font-medium text-foreground">{from}</span> থেকে{' '}
-                                            <span className="font-medium text-foreground">{to}</span> (মোট{' '}
+                                            দেখাচ্ছি <span className="font-medium text-foreground">{pageFrom}</span> থেকে{' '}
+                                            <span className="font-medium text-foreground">{pageTo}</span> (মোট{' '}
                                             <span className="font-medium text-foreground">{total}</span> টি)
                                         </>
                                     )}

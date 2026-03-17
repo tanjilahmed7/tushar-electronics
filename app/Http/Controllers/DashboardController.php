@@ -34,9 +34,11 @@ class DashboardController extends Controller
         $from = $from && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $from) ? (string) $from : null;
         $to = $to && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $to) ? (string) $to : null;
 
-        $sims = Sim::all();
-        $totalSims = $sims->count();
-        $activeSims = $sims->where('status', 'active')->count();
+        $allSims = Sim::all();
+        $totalSims = $allSims->count();
+        $activeSims = $allSims->where('status', 'active')->count();
+
+        $sims = Sim::where('status', 'active')->get();
         $totalBalance = $sims->sum('balance');
 
         $allSimBalances = $sims

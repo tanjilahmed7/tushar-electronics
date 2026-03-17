@@ -79,7 +79,7 @@ class SimCategoryReportController extends Controller
             ['category_name', 'asc'],
         ])->values()->all();
 
-        $simOptions = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
+        $simOptions = Sim::query()->where('status', 'active')->orderBy('sim_number')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'sim_number' => $s->sim_number,
             'sim_name' => $s->name,

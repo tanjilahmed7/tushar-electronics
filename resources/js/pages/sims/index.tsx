@@ -186,15 +186,32 @@ export default function SimsIndex({ sims, filters, operators }: Props) {
                                                 <td className="px-6 py-4 font-medium">{sim.sim_number}</td>
                                                 <td className="px-6 py-4 text-right font-medium tabular-nums">{sim.balance}</td>
                                                 <td className="px-6 py-4">
-                                                    <span
+                                                    <button
+                                                        type="button"
+                                                        role="switch"
+                                                        aria-checked={sim.status === 'active'}
+                                                        aria-label={sim.status === 'active' ? 'সক্রিয় – ক্লিক করে নিষ্ক্রিয় করুন' : 'নিষ্ক্রিয় – ক্লিক করে সক্রিয় করুন'}
+                                                        onClick={() => {
+                                                            const next = sim.status === 'active' ? 'inactive' : 'active';
+                                                            router.patch(`${SIMS_PATH}/${sim.id}/status`, { status: next }, {
+                                                                preserveScroll: true,
+                                                                onSuccess: () => router.reload({ preserveScroll: true }),
+                                                            });
+                                                        }}
                                                         className={
-                                                            sim.status === 'active'
-                                                                ? 'text-green-700 dark:text-green-400'
-                                                                : 'text-muted-foreground'
+                                                            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 ' +
+                                                            (sim.status === 'active'
+                                                                ? 'bg-green-600 dark:bg-green-500'
+                                                                : 'bg-muted')
                                                         }
                                                     >
-                                                        {sim.status_label}
-                                                    </span>
+                                                        <span
+                                                            className={
+                                                                'pointer-events-none block size-5 rounded-full bg-white shadow-lg ring-0 transition-transform ' +
+                                                                (sim.status === 'active' ? 'translate-x-6' : 'translate-x-1')
+                                                            }
+                                                        />
+                                                    </button>
                                                 </td>
                                                 <td className="px-6 py-4 max-w-[200px] truncate text-muted-foreground" title={sim.note ?? undefined}>
                                                     {sim.note ?? '—'}

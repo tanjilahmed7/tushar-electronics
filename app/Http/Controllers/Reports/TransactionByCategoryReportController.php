@@ -62,7 +62,7 @@ class TransactionByCategoryReportController extends Controller
             'transaction_count' => (int) $row->transaction_count,
         ])->all();
 
-        $sims = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
+        $sims = Sim::query()->where('status', 'active')->orderBy('sim_number')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'label' => $s->name ? "{$s->name} ({$s->sim_number})" : $s->sim_number,
         ])->values()->all();

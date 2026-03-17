@@ -41,6 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('sims/{sim}', [SimController::class, 'show'])->name('sims.show');
     Route::get('sims/{sim}/edit', [SimController::class, 'edit'])->name('sims.edit');
     Route::put('sims/{sim}', [SimController::class, 'update'])->name('sims.update');
+    Route::patch('sims/{sim}/status', [SimController::class, 'updateStatus'])->name('sims.update-status');
     Route::delete('sims/{sim}', [SimController::class, 'destroy'])->name('sims.destroy');
 
     Route::get('transaction-categories', [TransactionCategoryController::class, 'index'])->name('transaction-categories.index');

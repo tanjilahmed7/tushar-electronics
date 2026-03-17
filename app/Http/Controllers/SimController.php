@@ -144,6 +144,22 @@ class SimController extends Controller
     }
 
     /**
+     * Update only the status of the specified SIM (for inline toggle).
+     */
+    public function updateStatus(Request $request, Sim $sim): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:'.implode(',', array_keys(Sim::STATUSES))],
+        ]);
+
+        $sim->update(['status' => $validated['status']]);
+
+        return redirect()
+            ->route('sims.index', request()->only(['search', 'operator']))
+            ->with('status', 'স্ট্যাটাস আপডেট করা হয়েছে।');
+    }
+
+    /**
      * Remove the specified SIM.
      */
     public function destroy(Sim $sim): RedirectResponse

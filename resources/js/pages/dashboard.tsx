@@ -124,6 +124,11 @@ export default function Dashboard() {
         setTo(chartTo ?? '');
     }, [chartTo]);
 
+    // Refetch SIM stats and balance list on visit so they reflect current active/inactive status
+    useEffect(() => {
+        router.reload({ preserveScroll: true });
+    }, []);
+
     const onYearChange = useCallback((value: string) => {
         setMonthFilter('');
         setFrom('');

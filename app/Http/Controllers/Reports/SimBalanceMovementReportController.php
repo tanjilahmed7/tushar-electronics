@@ -26,7 +26,7 @@ class SimBalanceMovementReportController extends Controller
             $to = $today;
         }
 
-        $sims = Sim::query()->orderBy('sim_number')->get()->map(fn (Sim $s) => [
+        $sims = Sim::query()->where('status', 'active')->orderBy('sim_number')->get()->map(fn (Sim $s) => [
             'id' => $s->id,
             'label' => $s->name ? "{$s->name} ({$s->sim_number})" : $s->sim_number,
         ])->values()->all();
