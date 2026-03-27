@@ -76,7 +76,7 @@ export default function SimsEdit({ sim, operators, statuses }: Props) {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                        <form onSubmit={handleSubmit} autoComplete="on" className="flex flex-col gap-6">
                             <div className="grid gap-4 sm:grid-cols-1">
                                 <div className="space-y-2">
                                     <Label htmlFor="name" className="text-base font-medium">

@@ -142,7 +142,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                        <form onSubmit={handleSubmit} autoComplete="on" className="flex flex-col gap-6">
                             <div className="grid gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="transaction_category_id" className="text-base font-medium">

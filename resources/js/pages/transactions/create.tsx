@@ -219,6 +219,7 @@ export default function TransactionsCreate({ categories, sims }: Props) {
                     <CardContent>
                         <form
                             onSubmit={handleSubmit}
+                            autoComplete="on"
                             className="flex flex-col gap-6"
                         >
                             <div className="flex flex-col gap-6">
