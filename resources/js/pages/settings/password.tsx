@@ -72,7 +72,7 @@ export default function Password() {
                                         name="current_password"
                                         type="password"
                                         className="mt-1 block w-full"
-                                        autoComplete="current-password"
+                                        autoComplete="on"
                                         placeholder="বর্তমান পাসওয়ার্ড"
                                     />
 
@@ -92,7 +92,7 @@ export default function Password() {
                                         name="password"
                                         type="password"
                                         className="mt-1 block w-full"
-                                        autoComplete="new-password"
+                                        autoComplete="on"
                                         placeholder="নতুন পাসওয়ার্ড"
                                     />
 
@@ -109,7 +109,7 @@ export default function Password() {
                                         name="password_confirmation"
                                         type="password"
                                         className="mt-1 block w-full"
-                                        autoComplete="new-password"
+                                        autoComplete="on"
                                         placeholder="পাসওয়ার্ড নিশ্চিত করুন"
                                     />
 

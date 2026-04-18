@@ -83,7 +83,7 @@ export default function TransactionCategoriesEdit({ category, types }: Props) {
                                         required
                                         placeholder="ক্যাটাগরির নাম লিখুন"
                                         className="h-12 text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <InputError message={errors.name} />
                                 </div>
@@ -116,6 +116,7 @@ export default function TransactionCategoriesEdit({ category, types }: Props) {
                                     </Label>
                                     <textarea
                                         id="description"
+                                        autoComplete="on"
                                         value={data.description}
                                         onChange={(e) => setData('description', e.target.value)}
                                         rows={4}

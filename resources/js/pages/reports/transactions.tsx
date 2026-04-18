@@ -145,7 +145,7 @@ export default function TransactionReport({
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && applyFilter()}
                                     className="h-12 text-base"
-                                    autoComplete="off"
+                                    autoComplete="on"
                                 />
                             </div>
                             <div className="space-y-2 sm:w-44">
@@ -208,7 +208,7 @@ export default function TransactionReport({
                                                     value={simSearch}
                                                     onChange={(e) => setSimSearch(e.target.value)}
                                                     className="h-9 pl-8 text-sm"
-                                                    autoComplete="off"
+                                                    autoComplete="on"
                                                 />
                                             </div>
                                         </div>

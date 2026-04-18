@@ -51,7 +51,7 @@ export default function Login({
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="email"
+                                    autoComplete="on"
                                     placeholder="ইমেইল@উদাহরণ.কম"
                                     className="h-12 text-base"
                                 />
@@ -82,7 +82,7 @@ export default function Login({
                                     name="password"
                                     required
                                     tabIndex={2}
-                                    autoComplete="current-password"
+                                    autoComplete="on"
                                     placeholder="পাসওয়ার্ড"
                                     className="h-12 text-base"
                                 />

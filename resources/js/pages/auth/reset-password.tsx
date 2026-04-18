@@ -33,7 +33,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 id="email"
                                 type="email"
                                 name="email"
-                                autoComplete="email"
+                                autoComplete="on"
                                 value={email}
                                 className="mt-1 block w-full"
                                 readOnly
@@ -50,7 +50,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 id="password"
                                 type="password"
                                 name="password"
-                                autoComplete="new-password"
+                                autoComplete="on"
                                 className="mt-1 block w-full"
                                 autoFocus
                                 placeholder="পাসওয়ার্ড"
@@ -66,7 +66,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 id="password_confirmation"
                                 type="password"
                                 name="password_confirmation"
-                                autoComplete="new-password"
+                                autoComplete="on"
                                 className="mt-1 block w-full"
                                 placeholder="পাসওয়ার্ড নিশ্চিত করুন"
                             />

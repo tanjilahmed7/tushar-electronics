@@ -33,7 +33,7 @@ export default function Register() {
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="name"
+                                    autoComplete="on"
                                     name="name"
                                     placeholder="পূর্ণ নাম"
                                 />
@@ -50,7 +50,7 @@ export default function Register() {
                                     type="email"
                                     required
                                     tabIndex={2}
-                                    autoComplete="email"
+                                    autoComplete="on"
                                     name="email"
                                     placeholder="ইমেইল@উদাহরণ.কম"
                                 />
@@ -64,7 +64,7 @@ export default function Register() {
                                     type="password"
                                     required
                                     tabIndex={3}
-                                    autoComplete="new-password"
+                                    autoComplete="on"
                                     name="password"
                                     placeholder="পাসওয়ার্ড"
                                 />
@@ -80,7 +80,7 @@ export default function Register() {
                                     type="password"
                                     required
                                     tabIndex={4}
-                                    autoComplete="new-password"
+                                    autoComplete="on"
                                     name="password_confirmation"
                                     placeholder="পাসওয়ার্ড নিশ্চিত করুন"
                                 />

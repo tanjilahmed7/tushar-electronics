@@ -167,7 +167,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                                         value={categorySearch}
                                                         onChange={(e) => setCategorySearch(e.target.value)}
                                                         className="h-9 pl-8 text-sm"
-                                                        autoComplete="off"
+                                                        autoComplete="on"
                                                     />
                                                 </div>
                                             </div>
@@ -208,7 +208,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                                         value={simSearch}
                                                         onChange={(e) => setSimSearch(e.target.value)}
                                                         className="h-9 pl-8 text-sm"
-                                                        autoComplete="off"
+                                                        autoComplete="on"
                                                     />
                                                 </div>
                                             </div>
@@ -240,7 +240,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         type="text"
                                         placeholder="গ্রাহক নম্বর"
                                         className="h-12 w-full text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <InputError message={errors.customer_number} />
                                 </div>
@@ -274,7 +274,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         step="0.01"
                                         placeholder="০"
                                         className="h-12 w-full text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <InputError message={errors.amount} />
                                 </div>
@@ -300,6 +300,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                     </Label>
                                     <textarea
                                         id="note"
+                                        autoComplete="on"
                                         value={data.note}
                                         onChange={(e) => setData('note', e.target.value)}
                                         rows={3}
@@ -322,7 +323,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         step="0.01"
                                         placeholder="০"
                                         className="h-12 w-full text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         কমিশন নির্বাচিত সিমের ব্যালেন্সে ক্রেডিট যোগ করবে
@@ -343,7 +344,7 @@ export default function TransactionsEdit({ transaction, categories, sims }: Prop
                                         step="0.01"
                                         placeholder="০"
                                         className="h-12 w-full text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         ফি নির্বাচিত সিমের ব্যালেন্স থেকে ডেবিট হবে (কাটা যাবে)

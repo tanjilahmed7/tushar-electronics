@@ -252,7 +252,7 @@ export default function TransactionsIndex({ transactions, filters }: Props) {
                                             if (e.key === 'Enter') applySearch();
                                         }}
                                         className="h-12 text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     {showSuggestions && (suggestions.length > 0 || loadingSuggestions) && (
                                         <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border border-border bg-background shadow-lg">

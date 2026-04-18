@@ -168,7 +168,7 @@ export default function TransactionByCategoryReport({
                                                     value={simSearch}
                                                     onChange={(e) => setSimSearch(e.target.value)}
                                                     className="h-9 pl-8 text-sm"
-                                                    autoComplete="off"
+                                                    autoComplete="on"
                                                 />
                                             </div>
                                         </div>

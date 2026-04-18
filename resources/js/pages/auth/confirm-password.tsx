@@ -25,7 +25,7 @@ export default function ConfirmPassword() {
                                 type="password"
                                 name="password"
                                 placeholder="পাসওয়ার্ড"
-                                autoComplete="current-password"
+                                autoComplete="on"
                                 autoFocus
                             />
 

@@ -61,7 +61,7 @@ export default function Profile({
                                         defaultValue={auth.user.name}
                                         name="name"
                                         required
-                                        autoComplete="name"
+                                        autoComplete="on"
                                         placeholder="পূর্ণ নাম"
                                     />
 
@@ -81,7 +81,7 @@ export default function Profile({
                                         defaultValue={auth.user.email}
                                         name="email"
                                         required
-                                        autoComplete="username"
+                                        autoComplete="on"
                                         placeholder="ইমেইল ঠিকানা"
                                     />
 

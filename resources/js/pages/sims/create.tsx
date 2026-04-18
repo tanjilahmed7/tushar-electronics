@@ -77,7 +77,7 @@ export default function SimsCreate({ statuses }: Props) {
                                         type="text"
                                         placeholder="যেমন: অফিস প্রাইমারি, ব্যক্তিগত"
                                         className="h-12 text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <InputError message={errors.name} />
                                 </div>
@@ -94,7 +94,7 @@ export default function SimsCreate({ statuses }: Props) {
                                         required
                                         placeholder="সিম নম্বর লিখুন"
                                         className="h-12 text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <InputError message={errors.sim_number} />
                                 </div>
@@ -134,7 +134,7 @@ export default function SimsCreate({ statuses }: Props) {
                                         step="0.01"
                                         placeholder="০"
                                         className="h-12 text-base"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                     <InputError message={errors.balance} />
                                 </div>
@@ -145,6 +145,7 @@ export default function SimsCreate({ statuses }: Props) {
                                     </Label>
                                     <textarea
                                         id="note"
+                                        autoComplete="on"
                                         value={data.note}
                                         onChange={(e) => setData('note', e.target.value)}
                                         rows={4}

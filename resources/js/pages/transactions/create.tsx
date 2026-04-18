@@ -381,7 +381,7 @@ function TransactionRowFields({
                                             setCategorySearch(e.target.value)
                                         }
                                         className="h-9 pl-8 text-sm"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                 </div>
                             </div>
@@ -427,7 +427,7 @@ function TransactionRowFields({
                                             setSimSearch(e.target.value)
                                         }
                                         className="h-9 pl-8 text-sm"
-                                        autoComplete="off"
+                                        autoComplete="on"
                                     />
                                 </div>
                             </div>
@@ -452,10 +452,15 @@ function TransactionRowFields({
                     <InputError message={err('sim_id')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">
+                    <Label
+                        className="text-base font-medium"
+                        htmlFor={`customer_number_${index}`}
+                    >
                         গ্রাহক নম্বর
                     </Label>
                     <Input
+                        id={`customer_number_${index}`}
+                        name={`customer_number_${index}`}
                         value={row.customer_number}
                         onChange={(e) =>
                             onUpdate('customer_number', e.target.value)
@@ -463,7 +468,7 @@ function TransactionRowFields({
                         type="text"
                         placeholder="গ্রাহক নম্বর"
                         className="h-11 w-full text-base"
-                        autoComplete="off"
+                        autoComplete="on"
                     />
                     <InputError message={err('customer_number')} />
                 </div>
@@ -477,7 +482,7 @@ function TransactionRowFields({
                         step="0.01"
                         placeholder="০"
                         className="h-11 w-full text-base"
-                        autoComplete="off"
+                        autoComplete="on"
                     />
                     <InputError message={err('amount')} />
                 </div>
@@ -488,6 +493,7 @@ function TransactionRowFields({
                         onChange={(e) => onUpdate('date', e.target.value)}
                         type="date"
                         className="h-11 w-full text-base"
+                        autoComplete="on"
                     />
                     <InputError message={err('date')} />
                 </div>
@@ -499,7 +505,7 @@ function TransactionRowFields({
                         type="text"
                         placeholder="নোট (ঐচ্ছিক)"
                         className="h-11 w-full text-base"
-                        autoComplete="off"
+                        autoComplete="on"
                     />
                     <InputError message={err('note')} />
                 </div>
@@ -515,7 +521,7 @@ function TransactionRowFields({
                         step="0.01"
                         placeholder="০"
                         className="h-11 w-full text-base"
-                        autoComplete="off"
+                        autoComplete="on"
                     />
 
                     <InputError message={err('commission')} />
@@ -530,7 +536,7 @@ function TransactionRowFields({
                         step="0.01"
                         placeholder="০"
                         className="h-11 w-full text-base"
-                        autoComplete="off"
+                        autoComplete="on"
                     />
                     <InputError message={err('fee')} />
                 </div>

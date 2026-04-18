@@ -132,7 +132,7 @@ export default function SimCategoryReportIndex({ rows, sims, filters }: Props) {
                                                     value={simSearch}
                                                     onChange={(e) => setSimSearch(e.target.value)}
                                                     className="h-9 pl-8 text-sm"
-                                                    autoComplete="off"
+                                                    autoComplete="on"
                                                 />
                                             </div>
                                         </div>

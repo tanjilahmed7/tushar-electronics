@@ -46,7 +46,8 @@
         <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet" />
 
         @viteReactRefresh
-        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        {{-- Only the Vite input entry; pages load via import.meta.glob in app.tsx. A second @vite() for each page often 404s in dev because those files are not build inputs. --}}
+        @vite(['resources/js/app.tsx'])
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

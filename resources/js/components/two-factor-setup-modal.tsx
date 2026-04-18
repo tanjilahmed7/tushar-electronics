@@ -119,6 +119,7 @@ function TwoFactorSetupStep({
                                     <input
                                         type="text"
                                         readOnly
+                                        autoComplete="on"
                                         value={manualSetupKey}
                                         className="h-full w-full bg-background p-3 text-foreground outline-none"
                                     />

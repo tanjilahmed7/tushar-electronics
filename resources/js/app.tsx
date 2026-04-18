@@ -1,9 +1,9 @@
+import { initializeTheme } from '@/hooks/use-appearance';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../css/app.css';
-import { initializeTheme } from '@/hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Tushar Electronics';
 
@@ -31,9 +31,19 @@ createInertiaApp({
 // This will set light / dark mode on load...
 initializeTheme();
 
-// Register PWA service worker (client only)
-if (typeof window !== 'undefined') {
-    import('virtual:pwa-register').then(({ registerSW }) => {
-        registerSW({ immediate: true });
-    });
+// PWA: register service worker only in production. In dev (Vite + Herd, etc.)
+// registerSW often fetches a script URL that returns 404 → console error.
+if (import.meta.env.PROD && typeof window !== 'undefined') {
+    import('virtual:pwa-register')
+        .then(({ registerSW }) => {
+            registerSW({
+                immediate: true,
+                onRegisterError(error) {
+                    console.warn('[PWA] Service worker registration failed:', error);
+                },
+            });
+        })
+        .catch((err) => {
+            console.warn('[PWA] Could not load service worker bootstrap:', err);
+        });
 }

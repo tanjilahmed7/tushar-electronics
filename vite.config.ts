@@ -46,16 +46,20 @@ export default defineConfig({
                 navigateFallback: null,
                 runtimeCaching: [
                     {
-                        urlPattern: /^https:\/\/fonts\.(bunny|googleapis|gstatic)\.net\/.*/i,
+                        urlPattern:
+                            /^https:\/\/fonts\.(bunny|googleapis|gstatic)\.net\/.*/i,
                         handler: 'CacheFirst',
                         options: {
                             cacheName: 'font-cache',
-                            expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 365,
+                            },
                         },
                     },
                 ],
             },
-            devOptions: { enabled: true },
+            devOptions: { enabled: false },
         }),
         react({
             babel: {

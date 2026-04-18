@@ -34,7 +34,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     id="email"
                                     type="email"
                                     name="email"
-                                    autoComplete="off"
+                                    autoComplete="on"
                                     autoFocus
                                     placeholder="ইমেইল@উদাহরণ.কম"
                                 />
