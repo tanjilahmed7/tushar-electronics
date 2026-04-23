@@ -484,11 +484,11 @@ export default function Dashboard() {
                         <CardHeader className="pb-2">
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                                        <Eye className="size-5 text-muted-foreground" />
+                                    <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                                        <Eye className="size-4 shrink-0 text-muted-foreground" />
                                         সব সিমের ব্যালেন্স এক নজরে
                                     </CardTitle>
-                                    <CardDescription className="mt-1 text-base">
+                                    <CardDescription className="mt-1 text-sm">
                                         প্রতিটি সিমের বর্তমান ব্যালেন্স
                                     </CardDescription>
                                 </div>
@@ -496,24 +496,24 @@ export default function Dashboard() {
                                     asChild
                                     variant="outline"
                                     size="sm"
-                                    className="h-10 w-fit text-base"
+                                    className="h-9 w-fit text-sm"
                                 >
                                     <Link href="/sims">সিম তালিকা</Link>
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-4 sm:p-6">
+                        <CardContent className="p-3 sm:p-5">
                             {allBalances.length === 0 ? (
-                                <p className="py-8 text-center text-base text-muted-foreground">
+                                <p className="py-6 text-center text-sm text-muted-foreground">
                                     কোনো সিম যোগ করা হয়নি। সিম তালিকা থেকে নতুন
                                     সিম যোগ করুন।
                                 </p>
                             ) : (
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8">
                                     {allBalances.map((sim) => (
                                         <div
                                             key={sim.id}
-                                            className={`rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 ${
+                                            className={`rounded-lg border border-border bg-card p-3 shadow-sm transition-colors hover:bg-muted/30 ${
                                                 sim.status === 'inactive'
                                                     ? 'opacity-70'
                                                     : ''
@@ -521,14 +521,14 @@ export default function Dashboard() {
                                         >
                                             <Link
                                                 href={`/sims/${sim.id}`}
-                                                className="block font-medium text-primary hover:underline"
+                                                className="block text-xs font-medium text-primary hover:underline"
                                             >
                                                 {sim.name ?? sim.sim_number}
                                             </Link>
-                                            <p className="mt-2 text-xl font-semibold text-foreground tabular-nums">
+                                            <p className="mt-1.5 text-base font-semibold text-foreground tabular-nums">
                                                 {sim.balance} ৳
                                             </p>
-                                            <p className="mt-1 text-sm text-muted-foreground">
+                                            <p className="mt-0.5 text-xs text-muted-foreground">
                                                 {sim.status === 'active'
                                                     ? 'সক্রিয়'
                                                     : 'নিষ্ক্রিয়'}
