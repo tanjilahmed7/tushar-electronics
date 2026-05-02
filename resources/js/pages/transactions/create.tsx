@@ -36,6 +36,7 @@ type CategoryOption = {
 };
 
 type TransactionRow = {
+    _rowKey: string;
     transaction_category_id: string | number;
     sim_id: string | number;
     customer_number: string;
@@ -64,7 +65,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'নতুন লেনদেন যোগ করুন', href: `${TRANSACTIONS_PATH}/create` },
 ];
 
+const newRowKey = (): string =>
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `r-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 const defaultRow = (): TransactionRow => ({
+    _rowKey: newRowKey(),
     transaction_category_id: '',
     sim_id: '',
     customer_number: '',
@@ -146,7 +153,7 @@ export default function TransactionsCreate({ categories, sims }: Props) {
         e.preventDefault();
         post(TRANSACTIONS_BULK_PATH, {
             transform: (d: { transactions: TransactionRow[] }) => ({
-                transactions: d.transactions.map((t) => ({
+                transactions: d.transactions.map(({ _rowKey: _rk, ...t }) => ({
                     ...t,
                     transaction_category_id: Number(t.transaction_category_id),
                     sim_id:
@@ -225,7 +232,7 @@ export default function TransactionsCreate({ categories, sims }: Props) {
                             <div className="flex flex-col gap-6">
                                 {data.transactions.map((row, index) => (
                                     <TransactionRowFields
-                                        key={index}
+                                        key={row._rowKey}
                                         index={index}
                                         row={row}
                                         categories={categories}
@@ -473,8 +480,15 @@ function TransactionRowFields({
                     <InputError message={err('customer_number')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">পরিমাণ *</Label>
+                    <Label
+                        className="text-base font-medium"
+                        htmlFor={`transaction_amount_${index}`}
+                    >
+                        পরিমাণ *
+                    </Label>
                     <Input
+                        id={`transaction_amount_${index}`}
+                        name={`transactions[${index}][amount]`}
                         value={row.amount}
                         onChange={(e) => onUpdate('amount', e.target.value)}
                         type="number"
@@ -487,8 +501,15 @@ function TransactionRowFields({
                     <InputError message={err('amount')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">তারিখ *</Label>
+                    <Label
+                        className="text-base font-medium"
+                        htmlFor={`transaction_date_${index}`}
+                    >
+                        তারিখ *
+                    </Label>
                     <Input
+                        id={`transaction_date_${index}`}
+                        name={`transactions[${index}][date]`}
                         value={row.date}
                         onChange={(e) => onUpdate('date', e.target.value)}
                         type="date"
@@ -498,8 +519,15 @@ function TransactionRowFields({
                     <InputError message={err('date')} />
                 </div>
                 <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-                    <Label className="text-base font-medium">নোট</Label>
+                    <Label
+                        className="text-base font-medium"
+                        htmlFor={`note_${index}`}
+                    >
+                        নোট
+                    </Label>
                     <Input
+                        id={`note_${index}`}
+                        name={`note_${index}`}
                         value={row.note}
                         onChange={(e) => onUpdate('note', e.target.value)}
                         type="text"
@@ -510,10 +538,15 @@ function TransactionRowFields({
                     <InputError message={err('note')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">
+                    <Label
+                        className="text-base font-medium"
+                        htmlFor={`transaction_commission_${index}`}
+                    >
                         কমিশন (ঐচ্ছিক)
                     </Label>
                     <Input
+                        id={`transaction_commission_${index}`}
+                        name={`transactions[${index}][commission]`}
                         value={row.commission}
                         onChange={(e) => onUpdate('commission', e.target.value)}
                         type="number"
@@ -527,8 +560,15 @@ function TransactionRowFields({
                     <InputError message={err('commission')} />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">ফি (ঐচ্ছিক)</Label>
+                    <Label
+                        className="text-base font-medium"
+                        htmlFor={`transaction_fee_${index}`}
+                    >
+                        ফি (ঐচ্ছিক)
+                    </Label>
                     <Input
+                        id={`transaction_fee_${index}`}
+                        name={`transactions[${index}][fee]`}
                         value={row.fee}
                         onChange={(e) => onUpdate('fee', e.target.value)}
                         type="number"

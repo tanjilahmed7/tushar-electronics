@@ -3,6 +3,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -114,14 +115,24 @@ export default function TransactionCategoriesEdit({ category, types }: Props) {
                                     <Label htmlFor="description" className="text-base font-medium">
                                         বিবরণ (ঐচ্ছিক)
                                     </Label>
-                                    <textarea
+                                    <Textarea
+                                        key={`cat-desc-${category.id}`}
                                         id="description"
-                                        autoComplete="on"
-                                        value={data.description}
-                                        onChange={(e) => setData('description', e.target.value)}
+                                        name="description"
+                                        defaultValue={category.description ?? ''}
+                                        onInput={(e) =>
+                                            setData(
+                                                'description',
+                                                (e.target as HTMLTextAreaElement)
+                                                    .value,
+                                            )
+                                        }
+                                        onChange={(e) =>
+                                            setData('description', e.target.value)
+                                        }
                                         rows={4}
                                         placeholder="যেকোনো বিবরণ লিখুন..."
-                                        className="border-input placeholder:text-muted-foreground flex min-h-[120px] w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="min-h-[120px] text-base"
                                     />
                                 </div>
                             </div>

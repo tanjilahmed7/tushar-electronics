@@ -143,14 +143,16 @@ export default function SimsCreate({ statuses }: Props) {
                                     <Label htmlFor="note" className="text-base font-medium">
                                         নোট (ঐচ্ছিক)
                                     </Label>
-                                    <textarea
+                                    <Input
                                         id="note"
-                                        autoComplete="on"
+                                        name="note"
                                         value={data.note}
-                                        onChange={(e) => setData('note', e.target.value)}
-                                        rows={4}
+                                        onChange={(e) =>
+                                            setData('note', e.target.value)
+                                        }
+                                        type="text"
                                         placeholder="যেকোনো নোট লিখুন..."
-                                        className="border-input placeholder:text-muted-foreground flex min-h-[120px] w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="h-12 w-full text-base"
                                     />
                                 </div>
                             </div>
